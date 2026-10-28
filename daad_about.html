@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="دليل تعريفي مختصر لأولياء الأمور بمستوى ضاد — ثلاثة سلالم متدرجة: الحركات، القصص، المحادثة.">
+<title>مستوى ضاد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&family=Cairo:wght@400;500;600;700;900&family=Scheherazade+New:wght@400;700&display=swap">
+
+<style>
+:root{
+  --teal:#0e8a9c;
+  --deep:#086974;
+  --coral:#f15a68;
+  --navy:#2b3044;
+  --sand:#dcb897;
+  --sky:#eef8f9;
+  --paper:#ffffff;
+  --ink:#2b3044;
+  --muted:#5f7379;
+  --rule:#d9e8ea;
+  --rule-soft:#eaf3f4;
+  --ground:#dce9ea;
+  --ground-2:#c9dde0;
+
+  --display:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif;
+  --body:'Cairo',system-ui,-apple-system,sans-serif;
+  --naskh:'Scheherazade New','Noto Naskh Arabic',serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){ --ground:#0d2a2e; --ground-2:#071c1f; }
+}
+:root[data-theme="dark"]{ --ground:#0d2a2e; --ground-2:#071c1f; }
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  direction:rtl;
+  font-family:var(--body);
+  color:var(--ink);
+  background:linear-gradient(160deg,var(--ground),var(--ground-2));
+  padding-block:28px;
+  padding-inline:16px;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+
+/* ---------- A4 sheet ---------- */
+.deck{display:flex;flex-direction:column;align-items:center;gap:26px;max-width:100%}
+.sheet{
+  width:210mm;
+  max-width:100%;
+  min-height:297mm;
+  background:var(--paper);
+  padding:18mm 17mm 15mm;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 18px 44px rgba(8,45,52,.26);
+  border-radius:3px;
+  overflow:hidden;
+}
+.sheet::after{
+  content:attr(data-folio);
+  position:absolute;bottom:9mm;left:17mm;
+  font-family:var(--display);font-size:9pt;font-weight:600;
+  color:#9fb6ba;
+}
+.sheet::before{
+  content:'مستوى ضاد';
+  position:absolute;bottom:9mm;right:17mm;
+  font-size:8pt;font-weight:600;color:#b6c9cc;
+}
+.sheet--cover::before,.sheet--cover::after{content:none}
+
+/* ---------- type ---------- */
+h1,h2,h3,h4{margin:0;font-family:var(--display);text-wrap:balance;line-height:1.25}
+p{margin:0;line-height:1.85}
+.eyebrow{
+  font-family:var(--display);
+  font-size:9pt;font-weight:700;letter-spacing:.14em;
+  color:var(--teal);
+  display:flex;align-items:center;gap:9px;
+}
+.eyebrow::after{content:'';flex:1;height:1px;background:var(--rule)}
+h2.title{font-size:26pt;font-weight:800;color:var(--navy);margin-top:8px}
+.lede{font-size:11pt;color:var(--muted);max-width:60ch;margin-top:9px;line-height:1.85}
+.lede b{color:var(--navy);font-weight:700}
+.lede--wide{max-width:none}
+
+/* ---------- cover ---------- */
+.sheet--cover{
+  background:radial-gradient(120% 70% at 85% -8%,#14a0b4 0%,var(--teal) 42%,var(--deep) 100%);
+  color:#fff;justify-content:space-between;padding:22mm 17mm 17mm;
+}
+.mark{
+  width:24mm;height:24mm;border-radius:7mm;background:var(--coral);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-weight:800;font-size:32pt;color:#fff;
+  box-shadow:0 8px 22px rgba(0,0,0,.22);border:3px solid rgba(255,255,255,.9);
+}
+.cover-top{display:flex;align-items:center;gap:6mm}
+.cover-kicker{font-family:var(--display);font-weight:700;font-size:11.5pt;letter-spacing:.06em;color:#bfeaf0}
+.cover-h1{font-size:42pt;font-weight:800;line-height:1.15;margin-top:6mm}
+.thesis{border-inline-start:4px solid var(--coral);padding-inline-start:6mm;margin-top:10mm}
+.thesis .q{font-family:var(--naskh);font-size:23pt;font-weight:700;line-height:1.7;color:#fff}
+.thesis .a{font-size:10.5pt;color:#bfeaf0;margin-top:3mm;font-weight:600;line-height:1.75;max-width:50ch}
+
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;margin-top:10mm}
+.s3{
+  background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.3);
+  border-radius:5mm;padding:5mm 4.5mm;
+}
+.s3 .s3n{font-family:var(--display);font-size:9pt;font-weight:800;color:var(--sand);letter-spacing:.1em}
+.s3 h3{font-size:15pt;font-weight:800;color:#fff;margin:2mm 0 2mm}
+.s3 p{font-size:9pt;color:#cdeef2;line-height:1.7}
+
+.cover-foot{
+  display:flex;justify-content:space-between;align-items:flex-end;
+  border-top:1px solid rgba(255,255,255,.24);padding-top:5mm;margin-top:9mm;
+  font-size:9.5pt;font-weight:600;color:#cdeef2;
+}
+
+/* ---------- ladder (pages 2 & 3) ---------- */
+.ladder{position:relative;margin-top:7mm;display:flex;flex-direction:column}
+.ladder::before{
+  content:'';position:absolute;
+  inset-inline-start:6.5mm;top:8mm;bottom:8mm;width:2.5px;
+  background:linear-gradient(to bottom,#7fd4de,var(--navy));
+  border-radius:2px;
+}
+.rung{
+  display:grid;grid-template-columns:14mm 1fr;gap:0 6mm;
+  align-items:center;padding:3.4mm 0;position:relative;
+}
+.rg-mark{
+  width:14mm;height:14mm;border-radius:4.5mm;background:var(--c,var(--teal));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--naskh);font-size:19pt;font-weight:700;color:#fff;
+  box-shadow:0 0 0 3.5px var(--paper);position:relative;z-index:1;line-height:1;
+}
+.rg-mark.num{font-family:var(--display);font-size:16pt;font-weight:800}
+.rg-row{display:flex;align-items:center;gap:5mm;justify-content:space-between;flex-wrap:wrap}
+.rg-name{font-family:var(--display);font-size:13pt;font-weight:800;color:var(--navy);line-height:1.3}
+.rg-desc{font-size:9.5pt;color:var(--muted);line-height:1.65;margin-top:.8mm}
+.rg-spec{
+  font-family:var(--naskh);font-size:20pt;font-weight:700;color:var(--c,var(--deep));
+  line-height:1.5;text-align:left;white-space:nowrap;
+}
+.rg-spec small{
+  display:block;font-family:var(--body);font-size:8pt;font-weight:700;
+  color:var(--muted);letter-spacing:.03em;white-space:normal;margin-top:.5mm;
+}
+
+/* ---------- conversation ladder (page 4) ---------- */
+.ladder--talk{margin-top:3.5mm}
+.ladder--talk::before{top:7mm;bottom:7mm}
+.crung{
+  display:grid;grid-template-columns:14mm 1fr;gap:0 6mm;
+  padding:1.8mm 0;position:relative;align-items:start;
+}
+.cr-main{min-width:0}
+.cr-head{display:flex;align-items:baseline;gap:4mm;justify-content:space-between;flex-wrap:wrap}
+.cr-need{font-family:var(--display);font-size:11.5pt;font-weight:800;color:var(--navy);line-height:1.3}
+.cr-need span{font-family:var(--body);font-size:8.5pt;font-weight:600;color:var(--muted);margin-inline-start:2mm}
+.wclass{
+  display:inline-flex;align-items:center;gap:2mm;white-space:nowrap;
+  font-size:8.5pt;font-weight:800;color:#fff;background:var(--c,var(--teal));
+  border-radius:99px;padding:1.1mm 3.2mm;
+}
+.wclass em{font-style:normal;font-weight:700;opacity:.82;font-size:8pt}
+.cr-frames{
+  font-family:var(--naskh);font-size:13.5pt;font-weight:700;
+  color:var(--c,var(--deep));line-height:1.55;margin-top:.9mm;
+}
+.cr-ex{
+  font-family:var(--naskh);font-size:12.5pt;color:var(--navy);line-height:1.55;
+  background:var(--sky);border-radius:3mm;padding:.9mm 3.5mm;
+  display:inline-block;margin-top:1mm;
+}
+
+/* harvest strip */
+.harvest{
+  margin-top:4.5mm;border:1.5px solid var(--rule);border-radius:5mm;
+  padding:4mm 5mm;background:#fbfdfd;
+}
+.harvest h4{font-size:11pt;font-weight:800;color:var(--navy);display:flex;align-items:baseline;gap:3mm;flex-wrap:wrap}
+.harvest h4 span{font-family:var(--body);font-size:8.5pt;font-weight:700;color:var(--teal)}
+.hchips{display:flex;flex-wrap:wrap;gap:1.4mm;margin-top:2.4mm}
+.hchip{
+  font-size:8.5pt;font-weight:700;color:var(--deep);
+  background:var(--sky);border:1.2px solid #cbe7ea;
+  padding:1.1mm 2.8mm;border-radius:2.5mm;
+}
+
+/* ---------- note / callout ---------- */
+.note{
+  margin-top:auto;background:var(--navy);color:#fff;border-radius:5mm;padding:6mm 7mm;
+}
+.note h4{font-size:12.5pt;font-weight:800;margin-bottom:2.5mm}
+.note p{font-size:10pt;color:#c6d2d8;line-height:1.85}
+.note .hl{color:var(--sand);font-weight:700}
+
+.callout{
+  background:var(--sky);border:1.5px solid #cbe7ea;border-radius:5mm;
+  padding:5mm 6mm;margin-top:7mm;
+}
+.callout p{font-size:10pt;color:var(--deep);font-weight:600;line-height:1.8}
+.callout b{color:var(--navy);font-weight:800}
+
+/* ---------- print ---------- */
+@page{size:A4;margin:0}
+@media print{
+  body{background:#fff;padding:0;margin:0}
+  .deck{gap:0}
+  .screen-only{display:none!important}
+  .sheet{
+    box-shadow:none;border-radius:0;
+    width:210mm;height:297mm;min-height:297mm;
+    break-after:page;page-break-after:always;overflow:hidden;
+  }
+  .sheet:last-child{break-after:auto;page-break-after:auto}
+}
+
+/* ---------- screen banner ---------- */
+.screen-only{
+  max-width:210mm;width:100%;
+  background:rgba(255,255,255,.9);border:1.5px solid rgba(255,255,255,.7);
+  border-radius:4mm;padding:4mm 5mm;
+  font-size:10pt;color:var(--deep);font-weight:600;
+  display:flex;gap:3mm;align-items:center;line-height:1.7;
+  box-shadow:0 6px 18px rgba(8,45,52,.14);
+}
+.screen-only kbd{
+  font-family:var(--display);font-weight:700;font-size:9pt;
+  background:var(--navy);color:#fff;border-radius:2mm;padding:.8mm 2.2mm;
+}
+
+/* ---------- small screens ---------- */
+@media screen and (max-width:760px){
+  body{padding-inline:16px}
+  .sheet{padding:10mm 7mm 13mm;min-height:0}
+  .steps3{grid-template-columns:1fr}
+  .cover-h1{font-size:31pt}
+  h2.title{font-size:20pt}
+  .thesis .q{font-size:18pt}
+  .rung,.crung{grid-template-columns:12mm 1fr;gap:0 4mm}
+  .rg-mark{width:12mm;height:12mm;font-size:16pt}
+  .ladder::before{inset-inline-start:5.5mm}
+  .rg-row{gap:2mm}
+  .rg-spec{text-align:right;font-size:17pt;white-space:normal}
+  .rg-name{font-size:12pt}
+  .cr-frames{font-size:13pt}
+  .cr-ex{font-size:12pt}
+}
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+<div class="screen-only">
+  <span>🖨️</span>
+  <span>دليلٌ من <b>أربع صفحات</b> بمقاس <b>A4</b>. للحصول على نسخة PDF: اضغط <kbd>Ctrl</kbd> + <kbd>P</kbd> ثم «حفظ بصيغة PDF»، مع ضبط الهوامش على «بلا» وتفعيل «رسوم الخلفية».</span>
+</div>
+
+<!-- ============ 1 · الغلاف ============ -->
+<section class="sheet sheet--cover">
+  <div>
+    <div class="cover-top">
+      <div class="mark">ضـ</div>
+      <div class="cover-kicker">دليل تعريفي لأولياء الأمور</div>
+    </div>
+
+    <h1 class="cover-h1">مُسْتَوَى ضاد</h1>
+
+    <div class="thesis">
+      <div class="q">نُعلِّمُ الطفلَ أن يقرأَ الصوتَ،<br>لا أن يحفظَ اسمَ الحرفِ.</div>
+      <div class="a">لأنّ الطفلَ الذي يعرفُ «كَاف، تَاء، بَاء» لا يصلُ منها إلى قراءةِ «كَتَبَ» — فاسمُ الحرفِ شيءٌ وصوتُه في الكلمةِ شيءٌ آخر.</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="steps3">
+      <div class="s3">
+        <div class="s3n">السُّلَّمُ الأول</div>
+        <h3>الحَرَكات</h3>
+        <p>سبعُ درجاتٍ تبدأُ بالفتحةِ وتنتهي بالتنوين. في كلِّ درجةٍ مهارةٌ واحدةٌ فقط.</p>
+      </div>
+      <div class="s3">
+        <div class="s3n">السُّلَّمُ الثاني</div>
+        <h3>القِصَص</h3>
+        <p>خمسةُ مستوياتٍ تبدأُ بجملةٍ من كلمتين وتنتهي بجملةٍ من ستٍّ فأكثر.</p>
+      </div>
+      <div class="s3">
+        <div class="s3n">السُّلَّمُ الثالث</div>
+        <h3>المُحادَثة</h3>
+        <p>خمسةُ مستوياتٍ مرتّبةٍ بحسبِ حاجةِ الطفلِ الحقيقية — ١٥٠ مصطلحًا أساسيًّا وقوالبُها.</p>
+      </div>
+    </div>
+
+    <div class="cover-foot">
+      <span>ثلاثةُ سلالمَ متدرّجة · يصعدُها الطفلُ درجةً درجة</span>
+      <span>٢٠٢٦</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2 · سلم الحركات ============ -->
+<section class="sheet" data-folio="٢">
+  <div>
+    <div class="eyebrow">السُّلَّمُ الأول</div>
+    <h2 class="title">سُلَّمُ الحَرَكات</h2>
+    <p class="lede">هنا يتعلّمُ الطفلُ أن يقرأ. كلُّ درجةٍ تُفرِدُ <b>حركةً واحدةً</b> حتى تُتقَن، ثم تُضافُ إليها التي بعدها. ومع كلِّ درجةٍ يصيرُ قادرًا على قراءةِ كلماتٍ لم يكن يقرؤها قبلها.</p>
+
+    <div class="ladder">
+      <div class="rung">
+        <div class="rg-mark" style="--c:#5cc4d1">َ</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">الفَتْحَة</div>
+            <div class="rg-desc">أوّلُ صوتٍ يقرؤه الطفلُ في حياته</div>
+          </div>
+          <div class="rg-spec" style="--c:#3aa9b8">جَلَسَ <small>بَ · تَ · سَ</small></div>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rg-mark" style="--c:#2aa7ba">ِ</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">الكَسْرَة</div>
+            <div class="rg-desc">يميّزُ بين الصوتين ولا يخلطُهما</div>
+          </div>
+          <div class="rg-spec" style="--c:#2aa7ba">شَرِبَ <small>بِ · تِ · سِ</small></div>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rg-mark" style="--c:#0e8a9c">ُ</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">الضَّمَّة</div>
+            <div class="rg-desc">تكتملُ الحركاتُ الثلاثُ فيقرأُ أغلبَ الكلماتِ القصيرة</div>
+          </div>
+          <div class="rg-spec" style="--c:#0e8a9c">كُتُبٌ <small>بُ · تُ · سُ</small></div>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rg-mark" style="--c:#0b7787">ْ</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">السُّكُون</div>
+            <div class="rg-desc">أوّلُ عقبةٍ حقيقية — وهنا يبدأُ تقطيعُ الكلمةِ إلى مقاطع</div>
+          </div>
+          <div class="rg-spec" style="--c:#0b7787">مَكْتَبٌ <small>مَكْ · تَ · بٌ</small></div>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rg-mark" style="--c:#086974">ا</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">المُدُود</div>
+            <div class="rg-desc">مدُّ الألفِ والواوِ والياء — يمدُّ الصوتَ ولا يقطعُه</div>
+          </div>
+          <div class="rg-spec" style="--c:#086974">بَابٌ <small>نُورٌ · فِيلٌ</small></div>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rg-mark" style="--c:#0a5460">ّ</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">الشَّدَّة</div>
+            <div class="rg-desc">حرفٌ واحدٌ يُنطَقُ مرّتين — يشدُّ عليه ولا يُكرّرُه</div>
+          </div>
+          <div class="rg-spec" style="--c:#0a5460">الدُّبُّ <small>جَدَّةٌ · قِطَّةٌ</small></div>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rg-mark" style="--c:#2b3044">ً</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">التَّنْوِين</div>
+            <div class="rg-desc">آخرُ درجة — وبها يقرأُ الطفلُ النصَّ المشكولَ كاملًا</div>
+          </div>
+          <div class="rg-spec" style="--c:#2b3044">حَلِيبًا <small>بَيْتٍ · وَلَدٌ</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <h4>القاعدةُ الوحيدةُ في هذا السُّلَّم</h4>
+    <p>لا يُنقَلُ الطفلُ إلى الدرجةِ التاليةِ قبل أن يقرأَ درجتَه <span class="hl">دون تردّدٍ ودون أن يبحثَ عن الصوت</span>. الإعادةُ هنا ليست تأخّرًا، بل هي ما يجعلُ بقيّةَ السُّلَّمِ سهلًا.</p>
+  </div>
+</section>
+
+<!-- ============ 3 · سلم القصص ============ -->
+<section class="sheet" data-folio="٣">
+  <div>
+    <div class="eyebrow">السُّلَّمُ الثاني</div>
+    <h2 class="title">سُلَّمُ القِصَص</h2>
+    <p class="lede">بعد أن صارَ يقرأُ الكلمة، ينتقلُ إلى قراءةِ المعنى. <b>أربعون قصةً</b> كُتبت خصّيصًا لهذا المنهج، والتدرّجُ فيها مضبوطٌ <b>بعددِ الكلماتِ في الجملة</b> — لا بالانطباع. وكلُّ قصةٍ تحملُ قيمةً يتعلّمُها الطفلُ مع القراءة.</p>
+
+    <div class="ladder">
+      <div class="rung">
+        <div class="rg-mark num" style="--c:#0e8a9c">١</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">كلمتان في الجملة</div>
+            <div class="rg-desc">أفعالٌ ماضيةٌ بسيطةٌ بلا أدواتِ ربط · ٨ قصص</div>
+          </div>
+          <div class="rg-spec" style="--c:#0e8a9c;font-size:17pt">جَاعَ الدُّبُّ.</div>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rg-mark num" style="--c:#086974">٢</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">ثلاثُ كلمات</div>
+            <div class="rg-desc">فعلٌ وفاعلٌ ومفعول، مع مدودٍ وسكون · ٨ قصص</div>
+          </div>
+          <div class="rg-spec" style="--c:#086974;font-size:17pt">نَامَ الدِّيكُ طَوِيلًا.</div>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rg-mark num" style="--c:#b8926a">٣</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">أربعُ كلمات</div>
+            <div class="rg-desc">جملٌ موصوفةٌ بنعتٍ وجارٍّ ومجرور · ٨ قصص</div>
+          </div>
+          <div class="rg-spec" style="--c:#b8926a;font-size:16pt">وَجَدَتْ نَمْلَةٌ حَبَّةً كَبِيرَةً.</div>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rg-mark num" style="--c:#f15a68">٤</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">خمسُ كلمات</div>
+            <div class="rg-desc">جملٌ مركّبةٌ بظرفٍ وحال، وتنوينٌ بأنواعه · ٨ قصص</div>
+          </div>
+          <div class="rg-spec" style="--c:#f15a68;font-size:15pt">كَسَرَ بَاسِمٌ زُجَاجَ النَّافِذَةِ خَطَأً.</div>
+        </div>
+      </div>
+
+      <div class="rung">
+        <div class="rg-mark num" style="--c:#2b3044">٥</div>
+        <div class="rg-row">
+          <div>
+            <div class="rg-name">ستُّ كلماتٍ فأكثر</div>
+            <div class="rg-desc">أدواتُ ربطٍ: ثُمَّ · لٰكِنَّ · حَتَّى · ٨ قصص</div>
+          </div>
+          <div class="rg-spec" style="--c:#2b3044;font-size:14pt">ضَحِكَ بَعْضُهُمْ لٰكِنَّ المُعَلِّمَ ابْتَسَمَ.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p><b>كيف تُقرَأُ القصةُ الواحدة؟</b> تُعرَضُ كلماتُها الصعبةُ أوّلًا على بطاقاتٍ تكشفُ تقطيعَها، ثم تظهرُ الجملةُ مموّهةً وتنكشفُ <b>كلمةً كلمةً</b> بنقرةِ الطفلِ فلا يخمّن، ثم يُسألُ سؤالَي فهمٍ للتأكّدِ أنّه فهمَ المعنى لا أنّه نطقَ الحروفَ فقط.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <h4>لماذا كُتبت القصصُ من جديد؟</h4>
+    <p>لأنّ القصةَ التعليميةَ يجبُ أن تجمعَ أمرين: <span class="hl">لغةً في متناولِ الطفلِ ومعنًى يستحقُّ القراءة</span>. والقصصُ الجاهزةُ تُحقِّقُ أحدَهما غالبًا، لا كليهما.</p>
+  </div>
+</section>
+
+<!-- ============ 4 · سلم المحادثة ============ -->
+<section class="sheet" data-folio="٤">
+  <div>
+    <div class="eyebrow">السُّلَّمُ الثالث</div>
+    <h2 class="title">سُلَّمُ المُحادَثة</h2>
+    <p class="lede lede--wide">رُتِّبت الدرجاتُ بحسبِ <b>ما يحتاجُ الطفلُ أن يقولَه فعلًا</b>، لا بحسبِ صعوبةِ التركيبِ النحوي — فأوّلُ ما ينطقُه هو التسميةُ والطلب، وآخرُ ما يتعلّمُه إبداءُ الرأي. وكلُّ درجةٍ <b>تُضيفُ بابًا كاملًا من أبوابِ المفردات</b>.</p>
+
+    <div class="ladder ladder--talk">
+
+      <div class="crung">
+        <div class="rg-mark num" style="--c:#0e8a9c">١</div>
+        <div class="cr-main">
+          <div class="cr-head">
+            <div class="cr-need">أُسَمِّي وأَطْلُب <span>أكثرُ ما ينطقُه الطفلُ الصغير</span></div>
+            <span class="wclass" style="--c:#0e8a9c">الذواتُ والأشياء <em>٣٠ كلمة</em></span>
+          </div>
+          <div class="cr-frames" style="--c:#0e8a9c">هٰذَا… · هٰذِهِ… · أُرِيدُ… · عِنْدِي…</div>
+          <span class="cr-ex">هٰذِهِ أُمِّي. أُرِيدُ مَاءً.</span>
+        </div>
+      </div>
+
+      <div class="crung">
+        <div class="rg-mark num" style="--c:#086974">٢</div>
+        <div class="cr-main">
+          <div class="cr-head">
+            <div class="cr-need">أَصِفُ وأَدُلُّ على المكان <span>يصفُ ما يرى ويقولُ أين هو</span></div>
+            <span class="wclass" style="--c:#086974">الصفاتُ والأماكن <em>٣٥ كلمة</em></span>
+          </div>
+          <div class="cr-frames" style="--c:#086974">… كَبِيرٌ · أَيْنَ…؟ · فِي · عَلَى · تَحْتَ · بِجَانِبِ</div>
+          <span class="cr-ex">أَيْنَ حِذَائِي؟ — تَحْتَ السَّرِيرِ.</span>
+        </div>
+      </div>
+
+      <div class="crung">
+        <div class="rg-mark num" style="--c:#b8926a">٣</div>
+        <div class="cr-main">
+          <div class="cr-head">
+            <div class="cr-need">أُخْبِرُ عمَّا أَفْعَل <span>يحكي ما يفعلُه الآنَ وما فعلَه أمسِ</span></div>
+            <span class="wclass" style="--c:#b8926a">الأفعالُ والزمن <em>٤٠ كلمة</em></span>
+          </div>
+          <div class="cr-frames" style="--c:#b8926a">أَنَا أَلْعَبُ · لَعِبْتُ… · مَاذَا تَفْعَلُ؟ · هَلْ…؟</div>
+          <span class="cr-ex">مَاذَا تَفْعَلُ؟ — أَنَا أَقْرَأُ الآنَ.</span>
+        </div>
+      </div>
+
+      <div class="crung">
+        <div class="rg-mark num" style="--c:#f15a68">٤</div>
+        <div class="cr-main">
+          <div class="cr-head">
+            <div class="cr-need">أُعَبِّرُ وأُعَلِّل <span>يقولُ كيف يشعرُ ولماذا</span></div>
+            <span class="wclass" style="--c:#f15a68">المشاعرُ والتعليل <em>٢٥ كلمة</em></span>
+          </div>
+          <div class="cr-frames" style="--c:#f15a68">أَنَا جَائِعٌ · … لِأَنَّ… · مِنْ فَضْلِكَ · هَلْ يُمْكِنُ أَنْ…؟</div>
+          <span class="cr-ex">أَنَا حَزِينٌ لِأَنَّ لُعْبَتِي انْكَسَرَتْ.</span>
+        </div>
+      </div>
+
+      <div class="crung">
+        <div class="rg-mark num" style="--c:#2b3044">٥</div>
+        <div class="cr-main">
+          <div class="cr-head">
+            <div class="cr-need">أُحَاوِرُ وأُبْدِي رَأْيِي <span>يشاركُ في حوارٍ فيوافقُ أو يعترض</span></div>
+            <span class="wclass" style="--c:#2b3044">الرأيُ والمقارنة <em>٢٠ كلمة</em></span>
+          </div>
+          <div class="cr-frames" style="--c:#2b3044">أَظُنُّ أَنَّ… · فِي رَأْيِي… · أَتَّفِقُ · لٰكِنَّ… · أَجْمَلُ مِنْ…</div>
+          <span class="cr-ex">أَظُنُّ أَنَّ هٰذِهِ القِصَّةَ أَجْمَلُ.</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="harvest">
+      <h4>حصيلةُ الطفلِ في نهايةِ المسار <span>١٥٠ مصطلحًا أساسيًّا تغطّي أبوابَ الكلمِ كلَّها</span></h4>
+      <div class="hchips">
+        <span class="hchip">أسماءُ الأسرةِ والناس</span>
+        <span class="hchip">أسماءُ الأشياء</span>
+        <span class="hchip">الأطعمةُ والمشروبات</span>
+        <span class="hchip">الأماكن</span>
+        <span class="hchip">الصفاتُ وأضدادُها</span>
+        <span class="hchip">الألوان</span>
+        <span class="hchip">الأعداد</span>
+        <span class="hchip">الأفعالُ اليومية</span>
+        <span class="hchip">ظروفُ المكان</span>
+        <span class="hchip">ظروفُ الزمان</span>
+        <span class="hchip">المشاعرُ والأحوال</span>
+        <span class="hchip">الضمائر</span>
+        <span class="hchip">أدواتُ الاستفهام</span>
+        <span class="hchip">أدواتُ الربط</span>
+        <span class="hchip">أساليبُ الأدبِ والطلب</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <h4>لماذا هذا الترتيبُ بالذات؟</h4>
+    <p>لأنّنا لا نُعلِّمُه ما يسهُلُ إعرابُه، بل <span class="hl">ما يحتاجُه في يومِه</span>. والكلماتُ التي يتحدّثُ بها هي نفسُها التي قرأها في القصص.</p>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

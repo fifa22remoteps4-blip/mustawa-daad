@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ضاد — القصص المصوّرة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script>
+        Babel.registerPreset('daad-preset', {
+            presets: [
+                [Babel.availablePresets['env'], { modules: false }],
+                [Babel.availablePresets['react'], { runtime: 'classic' }]
+            ]
+        });
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        badeec: { teal: '#0e8a9c', coral: '#f15a68', deep: '#086974', navy: '#2b3044', sand: '#dcb897', sky: '#eef8f9' }
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;600;700;800&family=Cairo:wght@400;600;700;900&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
+        body { margin: 0; padding: 0; background-color: #eef8f9; }
+        .font-baloo { font-family: 'Baloo Bhaijaan 2', cursive; }
+        .font-cairo { font-family: 'Cairo', sans-serif; }
+        .font-naskh { font-family: 'Scheherazade New', 'Noto Naskh Arabic', serif; letter-spacing: 0.03em; word-spacing: 0.35em; overflow: visible !important; line-height: 2 !important; padding-top: 0.15em; }
+        .font-naskh span, .font-naskh div { overflow: visible !important; }
+        [class*='rounded'] .font-naskh, [class*='rounded'].font-naskh { overflow: visible !important; padding-top: 0.2em; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+    </style>
+</head>
+<body>
+    <div id="root" class="bg-badeec-sky min-h-screen font-cairo text-badeec-navy overflow-x-hidden select-none"></div>
+    <script type="text/babel" data-presets="daad-preset">
+    /** @jsx React.createElement */
+    /** @jsxFrag React.Fragment */
+    const { useState, useEffect, useRef } = React;
+
+    // ====== SVG ILLUSTRATION HELPERS ======
+    const Sky = ({color1='#87CEEB', color2='#E0F4FF', children}) => (
+        <svg viewBox="0 0 400 280" className="w-full rounded-t-2xl" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id={`sky${color1.replace('#','')}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={color1}/><stop offset="100%" stopColor={color2}/>
+            </linearGradient></defs>
+            <rect width="400" height="280" fill={`url(#sky${color1.replace('#','')})`}/>
+            {children}
+        </svg>
+    );
+    const Sun = ({x=340,y=50}) => <><circle cx={x} cy={y} r="30" fill="#FFD93D"/>{[0,45,90,135,180,225,270,315].map(a=><line key={a} x1={x} y1={y} x2={x+Math.cos(a*Math.PI/180)*42} y2={y+Math.sin(a*Math.PI/180)*42} stroke="#FFD93D" strokeWidth="3"/>)}</>;
+    const Cloud = ({x,y,s=1}) => <g transform={`translate(${x},${y}) scale(${s})`}><ellipse cx="0" cy="0" rx="25" ry="15" fill="white" opacity="0.8"/><ellipse cx="-15" cy="5" rx="18" ry="12" fill="white" opacity="0.8"/><ellipse cx="15" cy="5" rx="20" ry="12" fill="white" opacity="0.8"/></g>;
+    const Ground = ({color='#4ade80', y=220}) => <><rect x="0" y={y} width="400" height={280-y} fill={color}/><rect x="0" y={y} width="400" height="8" fill={color} opacity="0.7"/></>;
+    const Tree = ({x, y=210, s=1}) => <g transform={`translate(${x},${y}) scale(${s})`}><rect x="-6" y="-40" width="12" height="40" fill="#8B5E3C" rx="3"/><circle cx="0" cy="-55" r="25" fill="#22c55e"/><circle cx="-15" cy="-45" r="18" fill="#16a34a"/><circle cx="15" cy="-45" r="18" fill="#16a34a"/></g>;
+    const House = ({x, y=220}) => <g transform={`translate(${x},${y})`}><rect x="-30" y="-50" width="60" height="50" fill="#FDE68A" stroke="#D97706" strokeWidth="2"/><polygon points="-35,-50 0,-80 35,-50" fill="#EF4444" stroke="#B91C1C" strokeWidth="2"/><rect x="-10" y="-35" width="20" height="35" fill="#92400E" rx="2"/><circle cx="8" cy="-18" r="2" fill="#FFD93D"/></g>;
+    const Flower = ({x, y, color='#ec4899'}) => <g transform={`translate(${x},${y})`}><line x1="0" y1="0" x2="0" y2="15" stroke="#22c55e" strokeWidth="2"/>{[0,72,144,216,288].map(a=><circle key={a} cx={Math.cos(a*Math.PI/180)*6} cy={Math.sin(a*Math.PI/180)*6-2} r="4" fill={color}/>)}<circle cx="0" cy="-2" r="3" fill="#FCD34D"/></g>;
+    const Moon = ({x=50,y=40}) => <><circle cx={x} cy={y} r="25" fill="#FCD34D"/><circle cx={x+8} cy={y-5} r="20" fill="#1e3a5f"/></>;
+    const Stars = () => <>{[[30,20],[80,50],[150,25],[250,40],[320,60],[370,20],[200,15],[120,55]].map(([x,y],i)=><circle key={i} cx={x} cy={y} r="2" fill="white" opacity={0.5+Math.random()*0.5}/>)}</>;
+
+    // Animal SVG helpers
+    const Bear = ({x,y,s=1}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <ellipse cx="0" cy="0" rx="22" ry="25" fill="#8B6914"/>
+        <circle cx="-15" cy="-22" r="8" fill="#8B6914"/><circle cx="15" cy="-22" r="8" fill="#8B6914"/>
+        <circle cx="-15" cy="-22" r="5" fill="#D4A843"/><circle cx="15" cy="-22" r="5" fill="#D4A843"/>
+        <circle cx="-7" cy="-5" r="3" fill="#1a1a1a"/><circle cx="7" cy="-5" r="3" fill="#1a1a1a"/>
+        <ellipse cx="0" cy="5" rx="8" ry="6" fill="#D4A843"/><circle cx="0" cy="3" r="3" fill="#1a1a1a"/>
+        <path d="M-4,8 Q0,13 4,8" stroke="#1a1a1a" strokeWidth="1.5" fill="none"/>
+    </g>;
+    const Cat = ({x,y,s=1,color='#F97316'}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <ellipse cx="0" cy="5" rx="15" ry="18" fill={color}/>
+        <circle cx="0" cy="-12" r="13" fill={color}/>
+        <polygon points="-12,-22 -8,-10 -16,-12" fill={color}/><polygon points="12,-22 8,-10 16,-12" fill={color}/>
+        <circle cx="-5" cy="-14" r="3" fill="#22c55e"/><circle cx="5" cy="-14" r="3" fill="#22c55e"/>
+        <circle cx="-5" cy="-14" r="1.5" fill="#1a1a1a"/><circle cx="5" cy="-14" r="1.5" fill="#1a1a1a"/>
+        <ellipse cx="0" cy="-8" rx="3" ry="2" fill="#FDA4AF"/>
+        {[-1,0,1].map(i=><line key={`l${i}`} x1="-20" y1={-10+i*3} x2="-12" y2={-9+i*2} stroke={color} strokeWidth="1" opacity="0.5"/>)}
+        {[-1,0,1].map(i=><line key={`r${i}`} x1="20" y1={-10+i*3} x2="12" y2={-9+i*2} stroke={color} strokeWidth="1" opacity="0.5"/>)}
+    </g>;
+    const Bird = ({x,y,s=1,color='#3B82F6'}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <ellipse cx="0" cy="0" rx="12" ry="8" fill={color}/>
+        <circle cx="10" cy="-5" r="7" fill={color}/>
+        <circle cx="13" cy="-6" r="2" fill="#1a1a1a"/>
+        <polygon points="17,-5 24,-3 17,-2" fill="#F59E0B"/>
+        <path d="M-5,-5 L-15,-15 L-3,-8" fill={color}/>
+        <path d="M-2,-3 L-10,-18 L2,-6" fill={color} opacity="0.8"/>
+    </g>;
+    const Rooster = ({x,y,s=1}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <ellipse cx="0" cy="5" rx="18" ry="20" fill="#DC2626"/>
+        <circle cx="0" cy="-15" r="12" fill="#DC2626"/>
+        <path d="M-2,-27 Q0,-35 5,-27 Q8,-35 10,-25" fill="#EF4444"/>
+        <circle cx="-4" cy="-16" r="2.5" fill="white"/><circle cx="-4" cy="-16" r="1.5" fill="#1a1a1a"/>
+        <polygon points="6,-15 16,-13 6,-11" fill="#F59E0B"/>
+        <path d="M2,-8 Q5,-2 2,2" fill="#EF4444" opacity="0.7"/>
+        <line x1="-5" y1="25" x2="-5" y2="35" stroke="#F59E0B" strokeWidth="3"/>
+        <line x1="5" y1="25" x2="5" y2="35" stroke="#F59E0B" strokeWidth="3"/>
+        <path d="M-15,0 Q-30,5 -20,15" fill="#1e3a8a" opacity="0.8"/>
+        <path d="M-12,5 Q-25,12 -15,20" fill="#3B82F6" opacity="0.7"/>
+    </g>;
+    const Ant = ({x,y,s=1}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <ellipse cx="-8" cy="0" rx="8" ry="5" fill="#4a2c2a"/>
+        <circle cx="5" cy="-2" r="6" fill="#4a2c2a"/>
+        <circle cx="3" cy="-4" r="1.5" fill="white"/><circle cx="7" cy="-4" r="1.5" fill="white"/>
+        <line x1="2" y1="-8" x2="-3" y2="-15" stroke="#4a2c2a" strokeWidth="1.5"/>
+        <line x1="6" y1="-8" x2="10" y2="-15" stroke="#4a2c2a" strokeWidth="1.5"/>
+        <line x1="-5" y1="5" x2="-10" y2="12" stroke="#4a2c2a" strokeWidth="1.5"/>
+        <line x1="0" y1="5" x2="0" y2="13" stroke="#4a2c2a" strokeWidth="1.5"/>
+        <line x1="5" y1="4" x2="10" y2="12" stroke="#4a2c2a" strokeWidth="1.5"/>
+    </g>;
+    const Rabbit = ({x,y,s=1}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <ellipse cx="0" cy="5" rx="15" ry="18" fill="#E5E7EB"/>
+        <circle cx="0" cy="-12" r="12" fill="#E5E7EB"/>
+        <ellipse cx="-6" cy="-30" rx="5" ry="14" fill="#E5E7EB"/><ellipse cx="6" cy="-30" rx="5" ry="14" fill="#E5E7EB"/>
+        <ellipse cx="-6" cy="-30" rx="3" ry="10" fill="#FDA4AF"/>
+        <ellipse cx="6" cy="-30" rx="3" ry="10" fill="#FDA4AF"/>
+        <circle cx="-5" cy="-14" r="3" fill="#EC4899"/><circle cx="5" cy="-14" r="3" fill="#EC4899"/>
+        <circle cx="-5" cy="-14" r="1.5" fill="#1a1a1a"/><circle cx="5" cy="-14" r="1.5" fill="#1a1a1a"/>
+        <ellipse cx="0" cy="-7" rx="3" ry="2" fill="#FDA4AF"/>
+    </g>;
+    const Turtle = ({x,y,s=1}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <ellipse cx="0" cy="0" rx="22" ry="14" fill="#16a34a"/>
+        <path d="M-10,-8 L0,-15 L10,-8" fill="#15803d"/><path d="M-8,0 L0,-10 L8,0" fill="#15803d"/>
+        <circle cx="18" cy="2" r="6" fill="#86EFAC"/>
+        <circle cx="20" cy="0" r="1.5" fill="#1a1a1a"/>
+        <rect x="-15" y="10" width="6" height="8" rx="2" fill="#86EFAC"/>
+        <rect x="9" y="10" width="6" height="8" rx="2" fill="#86EFAC"/>
+    </g>;
+    const Horse = ({x,y,s=1}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <ellipse cx="0" cy="0" rx="28" ry="18" fill="#92400E"/>
+        <ellipse cx="25" cy="-15" rx="10" ry="14" fill="#92400E"/>
+        <ellipse cx="30" cy="-18" rx="4" ry="8" fill="#78350F"/>
+        <circle cx="30" cy="-20" r="2" fill="#1a1a1a"/>
+        <path d="M20,-28 Q25,-40 22,-25" stroke="#1a1a1a" strokeWidth="2" fill="none"/>
+        <rect x="-18" y="15" width="5" height="20" fill="#78350F"/><rect x="-8" y="15" width="5" height="20" fill="#78350F"/>
+        <rect x="8" y="15" width="5" height="20" fill="#78350F"/><rect x="18" y="15" width="5" height="20" fill="#78350F"/>
+        <path d="M-25,0 Q-35,10 -30,20" stroke="#1a1a1a" strokeWidth="2" fill="none"/>
+    </g>;
+    const Bee = ({x,y,s=1}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <ellipse cx="0" cy="0" rx="10" ry="7" fill="#FCD34D"/>
+        <rect x="-3" y="-7" width="6" height="14" fill="#1a1a1a" opacity="0.4"/>
+        <ellipse cx="-8" cy="-8" rx="8" ry="5" fill="white" opacity="0.6" transform="rotate(-20)"/>
+        <ellipse cx="8" cy="-8" rx="8" ry="5" fill="white" opacity="0.6" transform="rotate(20)"/>
+        <circle cx="10" cy="-1" r="2" fill="#1a1a1a"/>
+        <line x1="-3" y1="-7" x2="-5" y2="-12" stroke="#1a1a1a" strokeWidth="1"/>
+        <line x1="3" y1="-7" x2="5" y2="-12" stroke="#1a1a1a" strokeWidth="1"/>
+    </g>;
+    const Boy = ({x,y,s=1,shirt='#3B82F6',skin='#FBBF24'}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <rect x="-12" y="0" width="24" height="30" fill={shirt} rx="4"/>
+        <circle cx="0" cy="-12" r="14" fill={skin}/>
+        <circle cx="-5" cy="-14" r="2.5" fill="#1a1a1a"/><circle cx="5" cy="-14" r="2.5" fill="#1a1a1a"/>
+        <path d="M-4,-7 Q0,-4 4,-7" stroke="#1a1a1a" strokeWidth="1.5" fill="none"/>
+        <rect x="-15" y="-26" width="30" height="14" fill="#1a1a1a" rx="4"/>
+        <rect x="-6" y="30" width="5" height="15" fill={skin}/><rect x="1" y="30" width="5" height="15" fill={skin}/>
+    </g>;
+    const Girl = ({x,y,s=1,dress='#EC4899',skin='#FBBF24'}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <path d="M-12,0 L-18,35 L18,35 L12,0" fill={dress}/>
+        <circle cx="0" cy="-12" r="14" fill={skin}/>
+        <circle cx="-5" cy="-14" r="2.5" fill="#1a1a1a"/><circle cx="5" cy="-14" r="2.5" fill="#1a1a1a"/>
+        <path d="M-4,-7 Q0,-3 4,-7" stroke="#1a1a1a" strokeWidth="1.5" fill="none"/>
+        <path d="M-14,-20 Q-18,5 -16,10" stroke="#1a1a1a" strokeWidth="3" fill="none"/>
+        <path d="M14,-20 Q18,5 16,10" stroke="#1a1a1a" strokeWidth="3" fill="none"/>
+        <rect x="-14" y="-26" width="28" height="10" fill="#1a1a1a" rx="5"/>
+    </g>;
+    const OldWoman = ({x,y,s=1}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <path d="M-12,0 L-16,35 L16,35 L12,0" fill="#8B5CF6"/>
+        <circle cx="0" cy="-12" r="14" fill="#FBBF24"/>
+        <circle cx="-5" cy="-14" r="2" fill="#1a1a1a"/><circle cx="5" cy="-14" r="2" fill="#1a1a1a"/>
+        <path d="M-4,-7 Q0,-4 4,-7" stroke="#1a1a1a" strokeWidth="1.5" fill="none"/>
+        <path d="M-14,-22 Q-16,-5 -14,0" stroke="#9CA3AF" strokeWidth="3" fill="none"/>
+        <path d="M14,-22 Q16,-5 14,0" stroke="#9CA3AF" strokeWidth="3" fill="none"/>
+        <ellipse cx="0" cy="-25" rx="16" ry="6" fill="white" opacity="0.7"/>
+    </g>;
+    const Book = ({x,y,s=1,color='#3B82F6'}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <rect x="-12" y="-8" width="24" height="16" fill={color} rx="2"/>
+        <line x1="0" y1="-8" x2="0" y2="8" stroke="white" strokeWidth="1"/>
+        <rect x="-10" y="-5" width="8" height="2" fill="white" opacity="0.5" rx="1"/>
+        <rect x="-10" y="0" width="6" height="2" fill="white" opacity="0.5" rx="1"/>
+    </g>;
+    const Mosque = ({x,y,s=1}) => <g transform={`translate(${x},${y}) scale(${s})`}>
+        <rect x="-30" y="-40" width="60" height="40" fill="#FEF3C7" stroke="#D97706" strokeWidth="1.5"/>
+        <path d="M-30,-40 Q0,-70 30,-40" fill="#10B981"/>
+        <circle cx="0" cy="-55" r="4" fill="#FCD34D"/>
+        <rect x="30" y="-65" width="8" height="65" fill="#FEF3C7" stroke="#D97706" strokeWidth="1"/>
+        <path d="M30,-65 Q34,-75 38,-65" fill="#10B981"/>
+        <rect x="-8" y="-25" width="16" height="25" fill="#92400E" rx="8 8 0 0"/>
+    </g>;
+
+    // ====== STORY ILLUSTRATIONS ======
+    const illustrations = {
+        bear_honey: () => <Sky color1="#87CEEB" color2="#C8E6C9"><Sun/><Cloud x={80} y={40}/><Ground color="#4ade80"/><Tree x={60} y={220}/><Tree x={330} y={220} s={0.8}/><Bear x={200} y={185} s={1.8}/><rect x="160" y="200" width="30" height="20" rx="5" fill="#FCD34D" opacity="0.8"/><Tree x={200} y={220} s={1.2}/></Sky>,
+        cat_milk: () => <Sky color1="#FDE68A" color2="#FEF3C7"><Sun x={60} y={45}/><Cloud x={200} y={35}/><Ground color="#86EFAC"/><House x={300} y={220}/><Boy x={150} y={185} s={1.5}/><Cat x={220} y={200} s={1.5}/><ellipse cx="190" cy="218" rx="10" ry="5" fill="white"/></Sky>,
+        sami_ball: () => <Sky color1="#93C5FD" color2="#DBEAFE"><Sun/><Cloud x={120} y={30}/><Ground color="#86EFAC"/><Tree x={40} y={220}/><Tree x={360} y={220}/><Boy x={160} y={185} s={1.5}/><circle cx="230" cy="210" r="15" fill="#EF4444"/><circle cx="230" cy="205" r="3" fill="white" opacity="0.5"/><Boy x={300} y={185} s={1.3} shirt="#10B981"/></Sky>,
+        bird_nest: () => <Sky color1="#BAE6FD" color2="#E0F2FE"><Sun x={350} y={40}/><Cloud x={100} y={25} s={0.8}/><Ground color="#4ade80"/><Tree x={200} y={220} s={1.5}/><Bird x={200} y={130} s={2}/><Boy x={120} y={185} s={1.3}/><ellipse cx="215" cy="148" rx="12" ry="5" fill="#92400E"/></Sky>,
+        sami_neighbor: () => <Sky color1="#FDE68A" color2="#FEF9C4"><Sun x={340} y={40}/><Cloud x={80} y={30}/><Ground color="#86EFAC"/><House x={80} y={220}/><House x={320} y={220}/><Boy x={170} y={185} s={1.5}/><Boy x={240} y={185} s={1.4} shirt="#EF4444"/><rect x="195" y="205" width="20" height="8" rx="3" fill="#D4A843"/></Sky>,
+        rooster_village: () => <Sky color1="#1e3a5f" color2="#F59E0B"><Moon x={60} y={40}/><Stars/><Ground color="#365314"/><House x={80} y={220}/><House x={220} y={220}/><House x={340} y={220}/><Rooster x={150} y={175} s={1.5}/></Sky>,
+        boy_tree: () => <Sky color1="#87CEEB" color2="#DCFCE7"><Sun/><Cloud x={150} y={30}/><Ground color="#4ade80"/><Boy x={180} y={185} s={1.5}/><Tree x={250} y={220} s={1.3}/><Flower x={100} y={215} color="#ec4899"/><Flower x={130} y={218} color="#f59e0b"/><Flower x={320} y={212} color="#8b5cf6"/><rect x="170" y="208" width="15" height="10" rx="2" fill="#93C5FD"/></Sky>,
+        rabbit_turtle: () => <Sky color1="#FDE68A" color2="#ECFCCB"><Sun x={340} y={40}/><Cloud x={100} y={30}/><Ground color="#86EFAC"/><Rabbit x={100} y={190} s={1.5}/><Turtle x={280} y={208} s={1.5}/><path d="M50,225 Q200,215 380,225" stroke="#D97706" strokeWidth="3" strokeDasharray="8,4" fill="none"/><text x="200" y="245" textAnchor="middle" fill="#D97706" fontSize="14" fontWeight="bold">خَطُّ النِّهَايَةِ</text></Sky>,
+        ant_sister: () => <Sky color1="#DCFCE7" color2="#F0FDF4"><Sun x={50} y={40}/><Cloud x={300} y={25}/><Ground color="#4ade80"/><Ant x={180} y={215} s={2}/><Ant x={210} y={215} s={2}/><ellipse cx="195" cy="210" rx="6" ry="4" fill="#FCD34D"/><Flower x={100} y={215}/><Flower x={320} y={218} color="#8b5cf6"/></Sky>,
+        maryam_garden: () => <Sky color1="#FBCFE8" color2="#FCE7F3"><Sun x={340} y={40}/><Cloud x={100} y={25}/><Ground color="#86EFAC"/><Girl x={200} y={185} s={1.5}/><Flower x={100} y={215} color="#ec4899"/><Flower x={130} y={210} color="#f59e0b"/><Flower x={160} y={218} color="#8b5cf6"/><Flower x={250} y={212} color="#ef4444"/><Flower x={280} y={216} color="#3b82f6"/><Flower x={310} y={210} color="#ec4899"/><rect x="170" y="208" width="12" height="10" rx="2" fill="#93C5FD"/></Sky>,
+        horse_farmer: () => <Sky color1="#FDE68A" color2="#FEF9C4"><Sun/><Cloud x={250} y={30}/><Ground color="#86EFAC"/><Horse x={220} y={195} s={1.3}/><Boy x={120} y={185} s={1.5} shirt="#92400E"/><rect x="50" y="195" width="40" height="25" rx="3" fill="#FCD34D" stroke="#D97706"/></Sky>,
+        omar_mosque: () => <Sky color1="#BAE6FD" color2="#E0F2FE"><Sun x={50} y={40}/><Cloud x={300} y={25}/><Ground color="#E5E7EB"/><Mosque x={200} y={220} s={1.2}/><Boy x={120} y={185} s={1.3} shirt="#10B981"/><Boy x={100} y={190} s={1} shirt="#1e3a8a"/></Sky>,
+        honest_student: () => <Sky color1="#DBEAFE" color2="#EFF6FF"><Cloud x={80} y={25}/><Cloud x={300} y={35}/><Ground color="#CBD5E1"/><rect x="120" y="150" width="160" height="70" fill="#FEF3C7" stroke="#D97706"/><rect x="200" y="160" width="40" height="50" fill="#93C5FD" stroke="#60A5FA"/><Boy x={100} y={185} s={1.3} shirt="#3B82F6"/><path d="M225,165 L240,155 L240,185" fill="none" stroke="#EF4444" strokeWidth="2"/></Sky>,
+        grandma_granddaughter: () => <Sky color1="#EDE9FE" color2="#F5F3FF"><Cloud x={100} y={25}/><Ground color="#E5E7EB"/><House x={300} y={220}/><OldWoman x={180} y={185} s={1.3}/><Girl x={240} y={185} s={1.2} dress="#EC4899"/><Book x={210} y={210} s={1.5} color="#8B5CF6"/></Sky>,
+        busy_bee: () => <Sky color1="#FEF9C4" color2="#FFFBEB"><Sun x={340} y={40}/><Cloud x={80} y={25}/><Ground color="#86EFAC"/><Flower x={80} y={215} color="#ec4899"/><Flower x={130} y={210} color="#f59e0b"/><Flower x={200} y={218} color="#8b5cf6"/><Flower x={270} y={212} color="#ef4444"/><Flower x={330} y={215} color="#3b82f6"/><Bee x={150} y={170} s={2.5}/><Bee x={250} y={155} s={2}/><rect x="300" y="180" width="30" height="25" rx="4" fill="#FCD34D" stroke="#D97706"/></Sky>,
+        sarah_book: () => <Sky color1="#DBEAFE" color2="#EFF6FF"><Cloud x={100} y={25}/><Cloud x={300} y={35}/><Ground color="#E5E7EB"/><rect x="100" y="160" width="200" height="60" fill="#FEF3C7" stroke="#D97706"/><Girl x={200} y={175} s={1.5} dress="#8B5CF6"/><Book x={250} y={200} s={2} color="#3B82F6"/>{[0,1,2,3,4].map(i=><circle key={i} cx={120+i*45} cy={140} r="3" fill="#FCD34D"/>)}</Sky>,
+        patient_teacher: () => <Sky color1="#DBEAFE" color2="#EFF6FF"><Cloud x={80} y={25}/><Ground color="#E5E7EB"/><rect x="50" y="150" width="300" height="70" fill="#FEF3C7" stroke="#D97706"/><rect x="160" y="140" width="80" height="40" fill="#22c55e" rx="3"/><Boy x={200} y={155} s={1.5} shirt="#1e3a8a"/><Boy x={100} y={185} s={1} shirt="#3B82F6"/><Boy x={300} y={185} s={1} shirt="#EF4444"/></Sky>,
+        night_stars: () => <Sky color1="#0f172a" color2="#1e3a5f"><Moon x={300} y={50}/><Stars/>{[[50,30],[120,60],[180,25],[250,70],[330,40],[70,80],[200,55],[290,20],[160,75],[350,65]].map(([x,y],i)=><circle key={i} cx={x} cy={y} r={1.5+Math.random()*2} fill="white" opacity={0.4+Math.random()*0.6}/>)}<Ground color="#1a2e1a"/><Boy x={200} y={195} s={1.3} shirt="#1e3a8a"/></Sky>,
+        friends_storm: () => <Sky color1="#475569" color2="#94A3B8"><Cloud x={80} y={30} s={1.5}/><Cloud x={200} y={20} s={1.8}/><Cloud x={320} y={35} s={1.3}/><Ground color="#6B7280"/>{[100,150,200,250,300].map(x=><line key={x} x1={x} y1={60} x2={x-20} y2={200} stroke="#93C5FD" strokeWidth="1.5" opacity="0.4"/>)}<House x={300} y={220}/><Boy x={150} y={185} s={1.3} shirt="#3B82F6"/><Boy x={200} y={185} s={1.3} shirt="#10B981"/></Sky>,
+        forgiveness: () => <Sky color1="#FDE68A" color2="#FEF9C4"><Sun/><Cloud x={120} y={25}/><Ground color="#86EFAC"/><rect x="100" y="210" width="200" height="3" fill="#D97706"/><Boy x={160} y={185} s={1.5} shirt="#3B82F6"/><Boy x={240} y={185} s={1.5} shirt="#EF4444"/><Bird x={200} y={120} s={1.5} color="#E5E7EB"/></Sky>,
+    };
+
+    // ====== STORIES DATA (20 stories, 5 levels) ======
+    const storiesData = [
+        {
+            id: 1, level: 1, title: 'الدُّبُّ وَالْعَسَلُ', value: 'ما تظنه سيئًا قد يكون خيرًا', emoji: '🐻', color: '#F59E0B',
+            hasImages: true,
+            illustration: 'bear_honey',
+            scaffoldWords: [
+                { word: 'جَاعَ', syllables: ['جَا','عَ'] },
+                { word: 'الدُّبُّ', syllables: ['الدْ','دُ','بُّ'] },
+                { word: 'صَعَدَ', syllables: ['صَ','عَ','دَ'] },
+                { word: 'فَسَقَطَ', syllables: ['فَ','سَ','قَ','طَ'] },
+                { word: 'نَزَلَ', syllables: ['نَ','زَ','لَ'] },
+                { word: 'العَسَلُ', syllables: ['الْ','عَ','سَ','لُ'] }
+            ],
+            basicPct: 85, advPct: 15,
+            sentences: [
+                ['جَاعَ', 'الدُّبُّ.'],
+                ['صَعَدَ', 'فَسَقَطَ.'],
+                ['نَزَلَ', 'العَسَلُ.'],
+                ['أَكَلَ', 'وَشَكَرَ.']
+            ],
+            questions: [
+                { q: 'مَاذَا حَدَثَ لِلدُّبِّ حِينَ صَعَدَ؟', options: ['نَامَ', 'سَقَطَ', 'طَارَ'], a: 1 },
+                { q: 'مَاذَا فَعَلَ الدُّبُّ بَعْدَ الأَكْلِ؟', options: ['نَامَ', 'شَكَرَ', 'بَكَى'], a: 1 }
+            ]
+        },
+        {
+            id: 2, level: 1, title: 'القِطَّةُ وَالحَلِيبُ', value: 'الصبر يكسب القلوب', emoji: '🐱', color: '#F97316',
+            hasImages: true,
+            illustration: 'cat_milk',
+            scaffoldWords: [
+                { word: 'سَمِعَ', syllables: ['سَ','مِ','عَ'] },
+                { word: 'صَوْتًا', syllables: ['صَوْ','تًا'] },
+                { word: 'رَأَى', syllables: ['رَ','أَى'] },
+                { word: 'قِطَّةً', syllables: ['قِ','طَّ','ةً'] },
+                { word: 'أَعْطَاهَا', syllables: ['أَعْ','طَا','هَا'] },
+                { word: 'حَلِيبًا', syllables: ['حَ','لِي','بًا'] }
+            ],
+            basicPct: 85, advPct: 15,
+            sentences: [
+                ['سَمِعَ', 'صَوْتًا.'],
+                ['رَأَى', 'قِطَّةً.'],
+                ['أَعْطَاهَا', 'حَلِيبًا.'],
+                ['صَبَرَ', 'فَشَرِبَتْ.']
+            ],
+            questions: [
+                { q: 'مَاذَا رَأَى خَالِدٌ عِنْدَ البَابِ؟', options: ['كَلْبًا', 'قِطَّةً', 'عُصْفُورًا'], a: 1 },
+                { q: 'لِمَاذَا شَرِبَتِ القِطَّةُ أَخِيرًا؟', options: ['لِأَنَّهُ صَبَرَ', 'لِأَنَّهَا جَاعَتْ', 'لِأَنَّهُ نَادَاهَا'], a: 0 }
+            ]
+        },
+        {
+            id: 3, level: 1, title: 'سَامِي وَالكُرَةُ', value: 'فرحة الاثنين أكبر', emoji: '⚽', color: '#EF4444',
+            hasImages: true,
+            illustration: 'sami_ball',
+            scaffoldWords: [
+                { word: 'وَجَدَ', syllables: ['وَ','جَ','دَ'] },
+                { word: 'كُرَةً', syllables: ['كُ','رَ','ةً'] },
+                { word: 'لَعِبَ', syllables: ['لَ','عِ','بَ'] },
+                { word: 'بَكَى', syllables: ['بَ','كَى'] },
+                { word: 'صَاحِبُهَا', syllables: ['صَا','حِ','بُ','هَا'] },
+                { word: 'أَعَادَهَا', syllables: ['أَ','عَا','دَ','هَا'] }
+            ],
+            basicPct: 85, advPct: 15,
+            sentences: [
+                ['وَجَدَ', 'كُرَةً.'],
+                ['لَعِبَ', 'بِهَا.'],
+                ['بَكَى', 'صَاحِبُهَا.'],
+                ['أَعَادَهَا', 'فَلَعِبَا.']
+            ],
+            questions: [
+                { q: 'مَاذَا وَجَدَ سَامِي؟', options: ['كِتَابًا', 'كُرَةً', 'قَلَمًا'], a: 1 },
+                { q: 'مَاذَا فَعَلَ حِينَ بَكَى صَاحِبُهَا؟', options: ['أَخَذَهَا', 'أَعَادَهَا', 'رَمَاهَا'], a: 1 }
+            ]
+        },
+        {
+            id: 4, level: 1, title: 'العُصْفُورُ الصَّغِيرُ', value: 'الرفق بالضعيف', emoji: '🐦', color: '#3B82F6',
+            illustration: 'bird_nest',
+            scaffoldWords: [
+                { word: 'سَقَطَ', syllables: ['سَ','قَ','طَ'] },
+                { word: 'عُصْفُورٌ', syllables: ['عُصْ','فُو','رٌ'] },
+                { word: 'رَآهُ', syllables: ['رَآ','هُ'] },
+                { word: 'سَعْدٌ', syllables: ['سَعْ','دٌ'] },
+                { word: 'رَفَعَهُ', syllables: ['رَ','فَ','عَ','هُ'] },
+                { word: 'بِرِفْقٍ', syllables: ['بِ','رِفْ','قٍ'] }
+            ],
+            basicPct: 85, advPct: 15,
+            sentences: [
+                ['سَقَطَ', 'عُصْفُورٌ.'],
+                ['رَآهُ', 'سَعْدٌ.'],
+                ['رَفَعَهُ', 'بِرِفْقٍ.'],
+                ['طَارَ', 'فَرِحًا.']
+            ],
+            questions: [
+                { q: 'مَاذَا سَقَطَ؟', options: ['عُصْفُورٌ', 'قَلَمٌ', 'تُفَّاحَةٌ'], a: 0 },
+                { q: 'كَيْفَ رَفَعَ سَعْدٌ العُصْفُورَ؟', options: ['بِسُرْعَةٍ', 'بِرِفْقٍ', 'بِغَضَبٍ'], a: 1 }
+            ]
+        },
+        {
+            id: 5, level: 2, title: 'سَامِي وَجَارُهُ', value: 'المشاركة والإيثار', emoji: '🤝', color: '#10B981',
+            illustration: 'sami_neighbor',
+            scaffoldWords: [
+                { word: 'حَمَلَ', syllables: ['حَ','مَ','لَ'] },
+                { word: 'سَامِي', syllables: ['سَا','مِي'] },
+                { word: 'طَبَقًا', syllables: ['طَ','بَ','قًا'] },
+                { word: 'طَرَقَ', syllables: ['طَ','رَ','قَ'] },
+                { word: 'بَابَ', syllables: ['بَا','بَ'] },
+                { word: 'جَارِهِ', syllables: ['جَا','رِ','هِ'] }
+            ],
+            basicPct: 75, advPct: 25,
+            sentences: [
+                ['حَمَلَ', 'سَامِي', 'طَبَقًا.'],
+                ['طَرَقَ', 'بَابَ', 'جَارِهِ.'],
+                ['فَرِحَ', 'الجَارُ', 'كَثِيرًا.'],
+                ['عَادَ', 'سَامِي', 'سَعِيدًا.']
+            ],
+            questions: [
+                { q: 'مَاذَا حَمَلَ سَامِي؟', options: ['كِتَابًا', 'طَبَقًا', 'حَقِيبَةً'], a: 1 },
+                { q: 'كَيْفَ عَادَ سَامِي؟', options: ['حَزِينًا', 'سَعِيدًا', 'غَاضِبًا'], a: 1 }
+            ]
+        },
+        {
+            id: 6, level: 2, title: 'دِيكُ القَرْيَةِ', value: 'المسؤولية', emoji: '🐓', color: '#DC2626',
+            illustration: 'rooster_village',
+            scaffoldWords: [
+                { word: 'نَامَ', syllables: ['نَا','مَ'] },
+                { word: 'الدِّيكُ', syllables: ['الدْ','دِي','كُ'] },
+                { word: 'طَوِيلًا', syllables: ['طَ','وِي','لًا'] },
+                { word: 'تَأَخَّرَ', syllables: ['تَ','أَ','خَّ','رَ'] },
+                { word: 'أَهْلُ', syllables: ['أَهْ','لُ'] },
+                { word: 'القَرْيَةِ', syllables: ['الْ','قَرْ','يَ','ةِ'] }
+            ],
+            basicPct: 75, advPct: 25,
+            sentences: [
+                ['نَامَ', 'الدِّيكُ', 'طَوِيلًا.'],
+                ['تَأَخَّرَ', 'أَهْلُ', 'القَرْيَةِ.'],
+                ['نَدِمَ', 'الدِّيكُ', 'كَثِيرًا.'],
+                ['صَارَ', 'يَصِيحُ', 'بَاكِرًا.']
+            ],
+            questions: [
+                { q: 'مَاذَا حَدَثَ حِينَ نَامَ الدِّيكُ؟', options: ['فَرِحَ النَّاسُ', 'تَأَخَّرَ أَهْلُ القَرْيَةِ', 'نَزَلَ المَطَرُ'], a: 1 },
+                { q: 'مَاذَا صَارَ يَفْعَلُ الدِّيكُ؟', options: ['يَنَامُ طَوِيلًا', 'يَصِيحُ بَاكِرًا', 'يَلْعَبُ'], a: 1 }
+            ]
+        },
+        {
+            id: 7, level: 2, title: 'الوَلَدُ وَالشَّجَرَةُ', value: 'من زرع حصد', emoji: '🌳', color: '#16A34A',
+            illustration: 'boy_tree',
+            scaffoldWords: [
+                { word: 'غَرَسَ', syllables: ['غَ','رَ','سَ'] },
+                { word: 'فَادِي', syllables: ['فَا','دِي'] },
+                { word: 'شَجَرَةً', syllables: ['شَ','جَ','رَ','ةً'] },
+                { word: 'سَقَاهَا', syllables: ['سَ','قَا','هَا'] },
+                { word: 'كَبِرَتِ', syllables: ['كَ','بِ','رَ','تِ'] },
+                { word: 'الشَّجَرَةُ', syllables: ['الشْ','شَ','جَ','رَ','ةُ'] }
+            ],
+            basicPct: 75, advPct: 25,
+            sentences: [
+                ['غَرَسَ', 'فَادِي', 'شَجَرَةً.'],
+                ['سَقَاهَا', 'كُلَّ', 'يَوْمٍ.'],
+                ['كَبِرَتِ', 'الشَّجَرَةُ', 'مَعَهُ.'],
+                ['جَلَسَ', 'تَحْتَ', 'ظِلِّهَا.']
+            ],
+            questions: [
+                { q: 'مَاذَا غَرَسَ فَادِي؟', options: ['وَرْدَةً', 'شَجَرَةً', 'نَخْلَةً'], a: 1 },
+                { q: 'أَيْنَ جَلَسَ فَادِي؟', options: ['فِي البَيْتِ', 'تَحْتَ ظِلِّهَا', 'فِي المَدْرَسَةِ'], a: 1 }
+            ]
+        },
+        {
+            id: 8, level: 2, title: 'الأَرْنَبُ وَالسُّلَحْفَاةُ', value: 'المثابرة تسبق العجلة', emoji: '🐢', color: '#0D9488',
+            illustration: 'rabbit_turtle',
+            scaffoldWords: [
+                { word: 'تَسَابَقَ', syllables: ['تَ','سَا','بَ','قَ'] },
+                { word: 'أَرْنَبٌ', syllables: ['أَرْ','نَ','بٌ'] },
+                { word: 'وَسُلَحْفَاةٌ', syllables: ['وَ','سُ','لَحْ','فَا','ةٌ'] },
+                { word: 'نَامَ', syllables: ['نَا','مَ'] },
+                { word: 'الأَرْنَبُ', syllables: ['الْ','أَرْ','نَ','بُ'] },
+                { word: 'مُطْمَئِنًّا', syllables: ['مُطْ','مَ','ئِ','نًّا'] }
+            ],
+            basicPct: 75, advPct: 25,
+            sentences: [
+                ['تَسَابَقَ', 'أَرْنَبٌ', 'وَسُلَحْفَاةٌ.'],
+                ['نَامَ', 'الأَرْنَبُ', 'مُطْمَئِنًّا.'],
+                ['مَشَتِ', 'السُّلَحْفَاةُ', 'وَصَبَرَتْ.'],
+                ['وَصَلَتْ', 'قَبْلَ', 'الأَرْنَبِ.']
+            ],
+            questions: [
+                { q: 'مَاذَا فَعَلَ الأَرْنَبُ فِي السِّبَاقِ؟', options: ['أَسْرَعَ', 'نَامَ', 'وَقَفَ'], a: 1 },
+                { q: 'مَنْ وَصَلَ أَوَّلًا؟', options: ['الأَرْنَبُ', 'السُّلَحْفَاةُ', 'لَا أَحَدَ'], a: 1 }
+            ]
+        },
+        {
+            id: 9, level: 3, title: 'النَّمْلَةُ وَأُخْتُهَا', value: 'يد واحدة لا تحمل', emoji: '🐜', color: '#7C3AED',
+            illustration: 'ant_sister',
+            scaffoldWords: [
+                { word: 'وَجَدَتْ', syllables: ['وَ','جَ','دَتْ'] },
+                { word: 'نَمْلَةٌ', syllables: ['نَمْ','لَ','ةٌ'] },
+                { word: 'حَبَّةً', syllables: ['حَ','بَّ','ةً'] },
+                { word: 'كَبِيرَةً', syllables: ['كَ','بِي','رَ','ةً'] },
+                { word: 'حَاوَلَتْ', syllables: ['حَا','وَ','لَتْ'] },
+                { word: 'حَمْلَهَا', syllables: ['حَمْ','لَ','هَا'] }
+            ],
+            basicPct: 62, advPct: 38,
+            sentences: [
+                ['وَجَدَتْ', 'نَمْلَةٌ', 'حَبَّةً', 'كَبِيرَةً.'],
+                ['حَاوَلَتْ', 'حَمْلَهَا', 'فَمَا', 'قَدَرَتْ.'],
+                ['نَادَتْ', 'أُخْتَهَا', 'فَجَاءَتْ', 'مُسْرِعَةً.'],
+                ['حَمَلَتَا', 'الحَبَّةَ', 'مَعًا', 'بِسُهُولَةٍ.']
+            ],
+            questions: [
+                { q: 'لِمَاذَا نَادَتِ النَّمْلَةُ أُخْتَهَا؟', options: ['لِتَلْعَبَ مَعَهَا', 'لِتُسَاعِدَهَا فِي الحَمْلِ', 'لِتَأْكُلَ مَعَهَا'], a: 1 },
+                { q: 'كَيْفَ حَمَلَتَا الحَبَّةَ؟', options: ['بِصُعُوبَةٍ', 'مَعًا بِسُهُولَةٍ', 'لَمْ تَحْمِلَاهَا'], a: 1 }
+            ]
+        },
+        {
+            id: 10, level: 3, title: 'مَرْيَمُ وَالحَدِيقَةُ', value: 'العناية تصنع الجمال', emoji: '🌷', color: '#EC4899',
+            illustration: 'maryam_garden',
+            scaffoldWords: [
+                { word: 'رَأَتْ', syllables: ['رَ','أَتْ'] },
+                { word: 'مَرْيَمُ', syllables: ['مَرْ','يَ','مُ'] },
+                { word: 'وَرْدَةً', syllables: ['وَرْ','دَ','ةً'] },
+                { word: 'ذَابِلَةً', syllables: ['ذَا','بِ','لَ','ةً'] },
+                { word: 'سَقَتْهَا', syllables: ['سَ','قَتْ','هَا'] },
+                { word: 'بِحُبٍّ', syllables: ['بِ','حُ','بٍّ'] }
+            ],
+            basicPct: 62, advPct: 38,
+            sentences: [
+                ['رَأَتْ', 'مَرْيَمُ', 'وَرْدَةً', 'ذَابِلَةً.'],
+                ['سَقَتْهَا', 'كُلَّ', 'يَوْمٍ', 'بِحُبٍّ.'],
+                ['تَفَتَّحَتِ', 'الوَرْدَةُ', 'بَعْدَ', 'أَيَّامٍ.'],
+                ['صَارَتِ', 'الحَدِيقَةُ', 'أَجْمَلَ', 'مَكَانٍ.']
+            ],
+            questions: [
+                { q: 'كَيْفَ كَانَتِ الوَرْدَةُ أَوَّلًا؟', options: ['مُتَفَتِّحَةً', 'ذَابِلَةً', 'كَبِيرَةً'], a: 1 },
+                { q: 'مَاذَا فَعَلَتْ مَرْيَمُ؟', options: ['قَطَفَتْهَا', 'سَقَتْهَا كُلَّ يَوْمٍ', 'تَرَكَتْهَا'], a: 1 }
+            ]
+        },
+        {
+            id: 11, level: 3, title: 'الحِصَانُ الوَفِيُّ', value: 'الوفاء ورد الجميل', emoji: '🐴', color: '#92400E',
+            illustration: 'horse_farmer',
+            scaffoldWords: [
+                { word: 'تَعِبَ', syllables: ['تَ','عِ','بَ'] },
+                { word: 'الحِصَانُ', syllables: ['الْ','حِ','صَا','نُ'] },
+                { word: 'الحَصَادِ', syllables: ['الْ','حَ','صَا','دِ'] },
+                { word: 'اعْتَنَى', syllables: ['اعْ','تَ','نَى'] },
+                { word: 'الفَلَّاحُ', syllables: ['الْ','فَ','لَّا','حُ'] },
+                { word: 'كَثِيرًا', syllables: ['كَ','ثِي','رًا'] }
+            ],
+            basicPct: 62, advPct: 38,
+            sentences: [
+                ['تَعِبَ', 'الحِصَانُ', 'بَعْدَ', 'الحَصَادِ.'],
+                ['اعْتَنَى', 'بِهِ', 'الفَلَّاحُ', 'كَثِيرًا.'],
+                ['مَرِضَ', 'الفَلَّاحُ', 'فِي', 'الشِّتَاءِ.'],
+                ['حَمَلَهُ', 'الحِصَانُ', 'إِلَى', 'الطَّبِيبِ.']
+            ],
+            questions: [
+                { q: 'مَنِ اعْتَنَى بِالحِصَانِ؟', options: ['الطَّبِيبُ', 'الفَلَّاحُ', 'الجَارُ'], a: 1 },
+                { q: 'مَاذَا فَعَلَ الحِصَانُ حِينَ مَرِضَ الفَلَّاحُ؟', options: ['هَرَبَ', 'حَمَلَهُ إِلَى الطَّبِيبِ', 'نَامَ'], a: 1 }
+            ]
+        },
+        {
+            id: 12, level: 3, title: 'عُمَرُ فِي المَسْجِدِ', value: 'الأدب نور', emoji: '🕌', color: '#059669',
+            illustration: 'omar_mosque',
+            scaffoldWords: [
+                { word: 'دَخَلَ', syllables: ['دَ','خَ','لَ'] },
+                { word: 'عُمَرُ', syllables: ['عُ','مَ','رُ'] },
+                { word: 'المَسْجِدَ', syllables: ['الْ','مَسْ','جِ','دَ'] },
+                { word: 'بِهُدُوءٍ', syllables: ['بِ','هُ','دُو','ءٍ'] },
+                { word: 'صَلَّى', syllables: ['صَ','لَّى'] },
+                { word: 'بِجَانِبِ', syllables: ['بِ','جَا','نِ','بِ'] }
+            ],
+            basicPct: 62, advPct: 38,
+            sentences: [
+                ['دَخَلَ', 'عُمَرُ', 'المَسْجِدَ', 'بِهُدُوءٍ.'],
+                ['صَلَّى', 'بِجَانِبِ', 'أَبِيهِ', 'بِأَدَبٍ.'],
+                ['ابْتَسَمَ', 'لَهُ', 'الإِمَامُ', 'الكَبِيرُ.'],
+                ['عَادَ', 'وَقَلْبُهُ', 'مَلِيءٌ', 'بِالنُّورِ.']
+            ],
+            questions: [
+                { q: 'كَيْفَ دَخَلَ عُمَرُ المَسْجِدَ؟', options: ['بِسُرْعَةٍ', 'بِهُدُوءٍ', 'بِصَوْتٍ عَالٍ'], a: 1 },
+                { q: 'بِجَانِبِ مَنْ صَلَّى عُمَرُ؟', options: ['أَبِيهِ', 'أَخِيهِ', 'صَدِيقِهِ'], a: 0 }
+            ]
+        },
+        {
+            id: 13, level: 4, title: 'التِّلْمِيذُ الصَّادِقُ', value: 'الصدق شجاعة', emoji: '🏅', color: '#6366F1',
+            illustration: 'honest_student',
+            scaffoldWords: [
+                { word: 'كَسَرَ', syllables: ['كَ','سَ','رَ'] },
+                { word: 'بَاسِمٌ', syllables: ['بَا','سِ','مٌ'] },
+                { word: 'زُجَاجَ', syllables: ['زُ','جَا','جَ'] },
+                { word: 'النَّافِذَةِ', syllables: ['النْ','نَا','فِ','ذَ','ةِ'] },
+                { word: 'خَطَأً', syllables: ['خَ','طَ','أً'] },
+                { word: 'خَافَ', syllables: ['خَا','فَ'] }
+            ],
+            basicPct: 48, advPct: 52,
+            sentences: [
+                ['كَسَرَ', 'بَاسِمٌ', 'زُجَاجَ', 'النَّافِذَةِ', 'خَطَأً.'],
+                ['خَافَ', 'ثُمَّ', 'ذَهَبَ', 'إِلَى', 'المُدِيرِ.'],
+                ['اعْتَرَفَ', 'بِخَطَئِهِ', 'أَمَامَ', 'الجَمِيعِ', 'بِشَجَاعَةٍ.'],
+                ['شَكَرَهُ', 'المُدِيرُ', 'وَجَعَلَهُ', 'قُدْوَةً', 'لِلتَّلَامِيذِ.']
+            ],
+            questions: [
+                { q: 'مَاذَا كَسَرَ بَاسِمٌ؟', options: ['قَلَمًا', 'زُجَاجَ النَّافِذَةِ', 'كُرْسِيًّا'], a: 1 },
+                { q: 'مَاذَا فَعَلَ المُدِيرُ حِينَ اعْتَرَفَ بَاسِمٌ؟', options: ['عَاقَبَهُ', 'شَكَرَهُ وَجَعَلَهُ قُدْوَةً', 'طَرَدَهُ'], a: 1 }
+            ]
+        },
+        {
+            id: 14, level: 4, title: 'الجَدَّةُ وَالحَفِيدَةُ', value: 'بر الكبار بركة', emoji: '👵', color: '#8B5CF6',
+            illustration: 'grandma_granddaughter',
+            scaffoldWords: [
+                { word: 'زَارَتْ', syllables: ['زَا','رَتْ'] },
+                { word: 'رِيمُ', syllables: ['رِي','مُ'] },
+                { word: 'جَدَّتَهَا', syllables: ['جَ','دَّ','تَ','هَا'] },
+                { word: 'يَوْمَ', syllables: ['يَوْ','مَ'] },
+                { word: 'الجُمُعَةِ', syllables: ['الْ','جُ','مُ','عَ','ةِ'] },
+                { word: 'قَرَأَتْ', syllables: ['قَ','رَ','أَتْ'] }
+            ],
+            basicPct: 48, advPct: 52,
+            sentences: [
+                ['زَارَتْ', 'رِيمُ', 'جَدَّتَهَا', 'يَوْمَ', 'الجُمُعَةِ.'],
+                ['قَرَأَتْ', 'لَهَا', 'وَرَتَّبَتْ', 'غُرْفَتَهَا', 'الصَّغِيرَةَ.'],
+                ['حَكَتْ', 'لَهَا', 'الجَدَّةُ', 'حِكَايَةً', 'جَمِيلَةً.'],
+                ['دَعَتْ', 'لَهَا', 'الجَدَّةُ', 'مِنْ', 'قَلْبِهَا.']
+            ],
+            questions: [
+                { q: 'مَتَى زَارَتْ رِيمُ جَدَّتَهَا؟', options: ['يَوْمَ السَّبْتِ', 'يَوْمَ الجُمُعَةِ', 'يَوْمَ العِيدِ'], a: 1 },
+                { q: 'مَاذَا فَعَلَتِ الجَدَّةُ لِرِيمَ؟', options: ['حَكَتْ لَهَا وَدَعَتْ لَهَا', 'نَامَتْ', 'طَبَخَتْ'], a: 0 }
+            ]
+        },
+        {
+            id: 15, level: 4, title: 'النَّحْلَةُ النَّشِيطَةُ', value: 'في الاجتهاد نفع للجميع', emoji: '🐝', color: '#D97706',
+            illustration: 'busy_bee',
+            scaffoldWords: [
+                { word: 'خَرَجَتِ', syllables: ['خَ','رَ','جَ','تِ'] },
+                { word: 'النَّحْلَةُ', syllables: ['النْ','نَحْ','لَ','ةُ'] },
+                { word: 'أَوَّلِ', syllables: ['أَ','وَّ','لِ'] },
+                { word: 'الصَّبَاحِ', syllables: ['الصْ','صَ','بَا','حِ'] },
+                { word: 'زَارَتْ', syllables: ['زَا','رَتْ'] },
+                { word: 'زَهْرَةً', syllables: ['زَهْ','رَ','ةً'] }
+            ],
+            basicPct: 48, advPct: 52,
+            sentences: [
+                ['خَرَجَتِ', 'النَّحْلَةُ', 'مَعَ', 'أَوَّلِ', 'الصَّبَاحِ.'],
+                ['زَارَتْ', 'زَهْرَةً', 'بَعْدَ', 'زَهْرَةٍ', 'بِنَشَاطٍ.'],
+                ['عَادَتْ', 'إِلَى', 'الخَلِيَّةِ', 'قَبْلَ', 'المَسَاءِ.'],
+                ['صَنَعَتْ', 'عَسَلًا', 'يَنْفَعُ', 'النَّاسَ', 'كُلَّهُمْ.']
+            ],
+            questions: [
+                { q: 'مَتَى خَرَجَتِ النَّحْلَةُ؟', options: ['فِي المَسَاءِ', 'مَعَ أَوَّلِ الصَّبَاحِ', 'فِي اللَّيْلِ'], a: 1 },
+                { q: 'مَاذَا صَنَعَتِ النَّحْلَةُ؟', options: ['عَسَلًا يَنْفَعُ النَّاسَ', 'بَيْتًا', 'خُبْزًا'], a: 0 }
+            ]
+        },
+        {
+            id: 16, level: 4, title: 'سَارَةُ وَالكِتَابُ', value: 'القراءة نافذة المعرفة', emoji: '📚', color: '#2563EB',
+            illustration: 'sarah_book',
+            scaffoldWords: [
+                { word: 'أَهْدَاهَا', syllables: ['أَهْ','دَا','هَا'] },
+                { word: 'أَبُوهَا', syllables: ['أَ','بُو','هَا'] },
+                { word: 'كِتَابًا', syllables: ['كِ','تَا','بًا'] },
+                { word: 'عَنِ', syllables: ['عَ','نِ'] },
+                { word: 'النُّجُومِ', syllables: ['النْ','نُ','جُو','مِ'] },
+                { word: 'قَرَأَتْ', syllables: ['قَ','رَ','أَتْ'] }
+            ],
+            basicPct: 48, advPct: 52,
+            sentences: [
+                ['أَهْدَاهَا', 'أَبُوهَا', 'كِتَابًا', 'عَنِ', 'النُّجُومِ.'],
+                ['قَرَأَتْ', 'كُلَّ', 'لَيْلَةٍ', 'صَفْحَتَيْنِ', 'فَقَطْ.'],
+                ['بَعْدَ', 'شَهْرٍ', 'عَرَفَتْ', 'أَسْمَاءَ', 'النُّجُومِ.'],
+                ['صَارَتْ', 'تُعَلِّمُ', 'صَدِيقَاتِهَا', 'مَا', 'تَعَلَّمَتْ.']
+            ],
+            questions: [
+                { q: 'عَنْ مَاذَا كَانَ الكِتَابُ؟', options: ['عَنِ البِحَارِ', 'عَنِ النُّجُومِ', 'عَنِ الحَيَوَانَاتِ'], a: 1 },
+                { q: 'كَمْ صَفْحَةً قَرَأَتْ كُلَّ لَيْلَةٍ؟', options: ['عَشْرَ صَفَحَاتٍ', 'صَفْحَتَيْنِ', 'خَمْسَ صَفَحَاتٍ'], a: 1 }
+            ]
+        },
+        {
+            id: 17, level: 5, title: 'المُعَلِّمُ الصَّبُورُ', value: 'التشجيع يصنع النجاح', emoji: '👨‍🏫', color: '#1E3A5F',
+            illustration: 'patient_teacher',
+            scaffoldWords: [
+                { word: 'أَخْطَأَ', syllables: ['أَخْ','طَ','أَ'] },
+                { word: 'زَيْدٌ', syllables: ['زَيْ','دٌ'] },
+                { word: 'القِرَاءَةِ', syllables: ['الْ','قِ','رَا','ءَ','ةِ'] },
+                { word: 'الصَّفِّ', syllables: ['الصْ','صَ','فِّ'] },
+                { word: 'ضَحِكَ', syllables: ['ضَ','حِ','كَ'] },
+                { word: 'بَعْضُ', syllables: ['بَعْ','ضُ'] }
+            ],
+            basicPct: 36, advPct: 64,
+            sentences: [
+                ['أَخْطَأَ', 'زَيْدٌ', 'فِي', 'القِرَاءَةِ', 'أَمَامَ', 'الصَّفِّ.'],
+                ['ضَحِكَ', 'بَعْضُ', 'التَّلَامِيذِ', 'لَكِنَّ', 'المُعَلِّمَ', 'ابْتَسَمَ.'],
+                ['شَجَّعَهُ', 'المُعَلِّمُ', 'حَتَّى', 'قَرَأَ', 'مِنْ', 'جَدِيدٍ.'],
+                ['فِي', 'آخِرِ', 'العَامِ', 'صَارَ', 'زَيْدٌ', 'أَفْضَلَ', 'قَارِئٍ.']
+            ],
+            questions: [
+                { q: 'مَاذَا فَعَلَ المُعَلِّمُ حِينَ أَخْطَأَ زَيْدٌ؟', options: ['غَضِبَ', 'ابْتَسَمَ وَشَجَّعَهُ', 'خَرَجَ'], a: 1 },
+                { q: 'مَاذَا صَارَ زَيْدٌ فِي آخِرِ العَامِ؟', options: ['أَفْضَلَ قَارِئٍ', 'لَاعِبًا', 'رَسَّامًا'], a: 0 }
+            ]
+        },
+        {
+            id: 18, level: 5, title: 'اللَّيْلُ وَالنُّجُومُ', value: 'التأمل يقرّب من الله', emoji: '🌙', color: '#312E81',
+            illustration: 'night_stars',
+            scaffoldWords: [
+                { word: 'جَلَسَ', syllables: ['جَ','لَ','سَ'] },
+                { word: 'آدَمُ', syllables: ['آ','دَ','مُ'] },
+                { word: 'أَبِيهِ', syllables: ['أَ','بِي','هِ'] },
+                { word: 'السَّطْحِ', syllables: ['السْ','سَطْ','حِ'] },
+                { word: 'نَظَرَا', syllables: ['نَ','ظَ','رَا'] },
+                { word: 'النُّجُومِ', syllables: ['النْ','نُ','جُو','مِ'] }
+            ],
+            basicPct: 36, advPct: 64,
+            sentences: [
+                ['جَلَسَ', 'آدَمُ', 'مَعَ', 'أَبِيهِ', 'فَوْقَ', 'السَّطْحِ.'],
+                ['نَظَرَا', 'إِلَى', 'النُّجُومِ', 'الَّتِي', 'تَمْلَأُ', 'السَّمَاءَ.'],
+                ['عَرَفَ', 'آدَمُ', 'أَنَّ', 'اللهَ', 'خَلَقَ', 'كُلَّ', 'شَيْءٍ.'],
+                ['نَامَ', 'وَقَلْبُهُ', 'مَمْلُوءٌ', 'بِحُبِّ', 'اللهِ', 'وَشُكْرِهِ.']
+            ],
+            questions: [
+                { q: 'أَيْنَ جَلَسَ آدَمُ مَعَ أَبِيهِ؟', options: ['فِي الحَدِيقَةِ', 'فَوْقَ السَّطْحِ', 'فِي الغُرْفَةِ'], a: 1 },
+                { q: 'مَاذَا عَرَفَ آدَمُ؟', options: ['أَنَّ اللهَ خَلَقَ كُلَّ شَيْءٍ', 'أَسْمَاءَ النُّجُومِ', 'عَدَدَ النُّجُومِ'], a: 0 }
+            ]
+        },
+        {
+            id: 19, level: 5, title: 'الصَّدِيقَانِ وَالعَاصِفَةُ', value: 'الصديق سند عند الشدة', emoji: '🌧️', color: '#475569',
+            illustration: 'friends_storm',
+            scaffoldWords: [
+                { word: 'خَرَجَ', syllables: ['خَ','رَ','جَ'] },
+                { word: 'رَامِي', syllables: ['رَا','مِي'] },
+                { word: 'وَهَانِي', syllables: ['وَ','هَا','نِي'] },
+                { word: 'غَائِمٍ', syllables: ['غَا','ئِ','مٍ'] },
+                { word: 'نَزَلَ', syllables: ['نَ','زَ','لَ'] },
+                { word: 'المَطَرُ', syllables: ['الْ','مَ','طَ','رُ'] }
+            ],
+            basicPct: 36, advPct: 64,
+            sentences: [
+                ['خَرَجَ', 'رَامِي', 'وَهَانِي', 'فِي', 'يَوْمٍ', 'غَائِمٍ.'],
+                ['نَزَلَ', 'المَطَرُ', 'فَجْأَةً', 'ثُمَّ', 'اشْتَدَّتِ', 'الرِّيحُ.'],
+                ['أَمْسَكَ', 'كُلٌّ', 'مِنْهُمَا', 'بِيَدِ', 'صَاحِبِهِ', 'بِقُوَّةٍ.'],
+                ['وَصَلَا', 'البَيْتَ', 'مَعًا', 'فَالصَّدِيقُ', 'سَنَدٌ', 'عِنْدَ', 'الشِّدَّةِ.']
+            ],
+            questions: [
+                { q: 'مَاذَا حَدَثَ فَجْأَةً؟', options: ['طَلَعَتِ الشَّمْسُ', 'نَزَلَ المَطَرُ', 'جَاءَ صَدِيقٌ'], a: 1 },
+                { q: 'كَيْفَ وَصَلَا البَيْتَ؟', options: ['كُلٌّ وَحْدَهُ', 'مَعًا مُتَمَاسِكَيْنِ', 'لَمْ يَصِلَا'], a: 1 }
+            ]
+        },
+        {
+            id: 20, level: 5, title: 'رِحْلَةُ التَّسَامُحِ', value: 'التسامح يقرّب القلوب', emoji: '🕊️', color: '#0EA5E9',
+            illustration: 'forgiveness',
+            scaffoldWords: [
+                { word: 'أَخَذَ', syllables: ['أَ','خَ','ذَ'] },
+                { word: 'كَرِيمٌ', syllables: ['كَ','رِي','مٌ'] },
+                { word: 'لُعْبَةَ', syllables: ['لُعْ','بَ','ةَ'] },
+                { word: 'أَخِيهِ', syllables: ['أَ','خِي','هِ'] },
+                { word: 'إِذْنٍ', syllables: ['إِذْ','نٍ'] },
+                { word: 'انْكَسَرَتِ', syllables: ['انْ','كَ','سَ','رَ','تِ'] }
+            ],
+            basicPct: 36, advPct: 64,
+            sentences: [
+                ['أَخَذَ', 'كَرِيمٌ', 'لُعْبَةَ', 'أَخِيهِ', 'دُونَ', 'إِذْنٍ.'],
+                ['انْكَسَرَتِ', 'اللُّعْبَةُ', 'فَغَضِبَ', 'أَخُوهُ', 'غَضَبًا', 'شَدِيدًا.'],
+                ['اعْتَذَرَ', 'كَرِيمٌ', 'وَوَعَدَ', 'أَنْ', 'يُصْلِحَهَا', 'بِنُقُودِهِ.'],
+                ['سَامَحَهُ', 'أَخُوهُ', 'فَالتَّسَامُحُ', 'يَجْعَلُ', 'القُلُوبَ', 'أَقْرَبَ.']
+            ],
+            questions: [
+                { q: 'مَاذَا أَخَذَ كَرِيمٌ دُونَ إِذْنٍ؟', options: ['كِتَابَ أَخِيهِ', 'لُعْبَةَ أَخِيهِ', 'قَلَمَ أَخِيهِ'], a: 1 },
+                { q: 'كَيْفَ انْتَهَتِ القِصَّةُ؟', options: ['سَامَحَهُ أَخُوهُ', 'تَخَاصَمَا', 'ذَهَبَ بَعِيدًا'], a: 0 }
+            ]
+        },
+        {
+            id: 21, level: 1, title: 'الوَلَدُ وَالجَدَّةُ', value: 'مساعدة الكبير أجر', emoji: '👵', color: '#0e8a9c',
+            scaffoldWords: [
+                { word: 'ذَهَبَ', syllables: ['ذَ','هَ','بَ'] },
+                { word: 'الوَلَدُ', syllables: ['الْ','وَ','لَ','دُ'] },
+                { word: 'شَاهَدَ', syllables: ['شَا','هَ','دَ'] },
+                { word: 'جَدَّةً', syllables: ['جَ','دَّ','ةً'] },
+                { word: 'سَاعَدَ', syllables: ['سَا','عَ','دَ'] },
+                { word: 'الجَدَّةَ', syllables: ['الْ','جَ','دَّ','ةَ'] }
+            ],
+            basicPct: 85, advPct: 15,
+            sentences: [
+                ['ذَهَبَ', 'الوَلَدُ.'],
+                ['شَاهَدَ', 'جَدَّةً.'],
+                ['سَاعَدَ', 'الجَدَّةَ.'],
+                ['كَسَبَ', 'أَجْرًا.']
+            ],
+            questions: [
+                { q: 'مَنْ سَاعَدَ الوَلَدُ؟', options: ['صَدِيقَهُ', 'جَدَّةً', 'أَخَاهُ'], a: 1 },
+                { q: 'مَاذَا كَسَبَ الوَلَدُ؟', options: ['مَالًا', 'أَجْرًا', 'لُعْبَةً'], a: 1 }
+            ]
+        },
+        {
+            id: 22, level: 1, title: 'الفَلَّاحُ وَالمَطَرُ', value: 'اعمل ثم توكل', emoji: '🌱', color: '#16A34A',
+            scaffoldWords: [
+                { word: 'زَرَعَ', syllables: ['زَ','رَ','عَ'] },
+                { word: 'الفَلَّاحُ', syllables: ['الْ','فَ','لَّا','حُ'] },
+                { word: 'نَزَلَ', syllables: ['نَ','زَ','لَ'] },
+                { word: 'المَطَرُ', syllables: ['الْ','مَ','طَ','رُ'] },
+                { word: 'نَبَتَ', syllables: ['نَ','بَ','تَ'] },
+                { word: 'الزَّرْعُ', syllables: ['الزْ','زَرْ','عُ'] }
+            ],
+            basicPct: 85, advPct: 15,
+            sentences: [
+                ['زَرَعَ', 'الفَلَّاحُ.'],
+                ['نَزَلَ', 'المَطَرُ.'],
+                ['نَبَتَ', 'الزَّرْعُ.'],
+                ['شَكَرَ', 'اللهَ.']
+            ],
+            questions: [
+                { q: 'مَاذَا فَعَلَ الفَلَّاحُ أَوَّلًا؟', options: ['نَامَ', 'زَرَعَ', 'أَكَلَ'], a: 1 },
+                { q: 'مَاذَا فَعَلَ حِينَ نَبَتَ الزَّرْعُ؟', options: ['شَكَرَ اللهَ', 'حَزِنَ', 'سَافَرَ'], a: 0 }
+            ]
+        },
+        {
+            id: 23, level: 1, title: 'العُصْفُورُ الأَبُ', value: 'العطاء سعادة', emoji: '🐦', color: '#3B82F6',
+            scaffoldWords: [
+                { word: 'طَارَ', syllables: ['طَا','رَ'] },
+                { word: 'العُصْفُورُ', syllables: ['الْ','عُصْ','فُو','رُ'] },
+                { word: 'وَجَدَ', syllables: ['وَ','جَ','دَ'] },
+                { word: 'حَبًّا', syllables: ['حَ','بًّا'] },
+                { word: 'أَطْعَمَ', syllables: ['أَطْ','عَ','مَ'] },
+                { word: 'صِغَارَهُ', syllables: ['صِ','غَا','رَ','هُ'] }
+            ],
+            basicPct: 85, advPct: 15,
+            sentences: [
+                ['طَارَ', 'العُصْفُورُ.'],
+                ['وَجَدَ', 'حَبًّا.'],
+                ['أَطْعَمَ', 'صِغَارَهُ.'],
+                ['نَامَ', 'سَعِيدًا.']
+            ],
+            questions: [
+                { q: 'مَاذَا وَجَدَ العُصْفُورُ؟', options: ['مَاءً', 'حَبًّا', 'عُشًّا'], a: 1 },
+                { q: 'مَنْ أَطْعَمَ العُصْفُورُ؟', options: ['نَفْسَهُ', 'صِغَارَهُ', 'صَدِيقَهُ'], a: 1 }
+            ]
+        },
+        {
+            id: 24, level: 1, title: 'سَلْمَى القَوِيَّةُ', value: 'القوي يقوم بعد السقوط', emoji: '💪', color: '#F59E0B',
+            scaffoldWords: [
+                { word: 'سَقَطَتْ', syllables: ['سَ','قَ','طَتْ'] },
+                { word: 'سَلْمَى', syllables: ['سَلْ','مَى'] },
+                { word: 'بَكَتْ', syllables: ['بَ','كَتْ'] },
+                { word: 'قَلِيلًا', syllables: ['قَ','لِي','لًا'] },
+                { word: 'وَقَفَتْ', syllables: ['وَ','قَ','فَتْ'] },
+                { word: 'وَحْدَهَا', syllables: ['وَحْ','دَ','هَا'] }
+            ],
+            basicPct: 85, advPct: 15,
+            sentences: [
+                ['سَقَطَتْ', 'سَلْمَى.'],
+                ['بَكَتْ', 'قَلِيلًا.'],
+                ['وَقَفَتْ', 'وَحْدَهَا.'],
+                ['أَكْمَلَتْ', 'طَرِيقَهَا.']
+            ],
+            questions: [
+                { q: 'مَاذَا فَعَلَتْ سَلْمَى بَعْدَ البُكَاءِ؟', options: ['نَامَتْ', 'وَقَفَتْ', 'صَرَخَتْ'], a: 1 },
+                { q: 'مَنْ سَاعَدَ سَلْمَى عَلَى الوُقُوفِ؟', options: ['أُمُّهَا', 'وَقَفَتْ وَحْدَهَا', 'صَدِيقَتُهَا'], a: 1 }
+            ]
+        },
+        {
+            id: 25, level: 2, title: 'النَّمْلَةُ الصَّابِرَةُ', value: 'من صبر وصل', emoji: '🐜', color: '#086974',
+            scaffoldWords: [
+                { word: 'حَمَلَتِ', syllables: ['حَ','مَ','لَ','تِ'] },
+                { word: 'النَّمْلَةُ', syllables: ['النْ','نَمْ','لَ','ةُ'] },
+                { word: 'حَبَّةً', syllables: ['حَ','بَّ','ةً'] },
+                { word: 'سَقَطَتِ', syllables: ['سَ','قَ','طَ','تِ'] },
+                { word: 'الحَبَّةُ', syllables: ['الْ','حَ','بَّ','ةُ'] },
+                { word: 'حَمَلَتْهَا', syllables: ['حَ','مَ','لَتْ','هَا'] }
+            ],
+            basicPct: 75, advPct: 25,
+            sentences: [
+                ['حَمَلَتِ', 'النَّمْلَةُ', 'حَبَّةً.'],
+                ['سَقَطَتِ', 'الحَبَّةُ', 'مِنْهَا.'],
+                ['حَمَلَتْهَا', 'مَرَّةً', 'ثَانِيَةً.'],
+                ['وَصَلَتْ', 'إِلَى', 'بَيْتِهَا.']
+            ],
+            questions: [
+                { q: 'مَاذَا حَمَلَتِ النَّمْلَةُ؟', options: ['وَرَقَةً', 'حَبَّةً', 'حَجَرًا'], a: 1 },
+                { q: 'مَاذَا فَعَلَتْ حِينَ سَقَطَتِ الحَبَّةُ؟', options: ['تَرَكَتْهَا', 'حَمَلَتْهَا ثَانِيَةً', 'بَكَتْ'], a: 1 }
+            ]
+        },
+        {
+            id: 26, level: 2, title: 'قَلَمُ أَحْمَدَ', value: 'الصديق وقت الضيق', emoji: '✏️', color: '#8B5CF6',
+            scaffoldWords: [
+                { word: 'ضَاعَ', syllables: ['ضَا','عَ'] },
+                { word: 'قَلَمُ', syllables: ['قَ','لَ','مُ'] },
+                { word: 'أَحْمَدَ', syllables: ['أَحْ','مَ','دَ'] },
+                { word: 'حَزِنَ', syllables: ['حَ','زِ','نَ'] },
+                { word: 'أَحْمَدُ', syllables: ['أَحْ','مَ','دُ'] },
+                { word: 'كَثِيرًا', syllables: ['كَ','ثِي','رًا'] }
+            ],
+            basicPct: 75, advPct: 25,
+            sentences: [
+                ['ضَاعَ', 'قَلَمُ', 'أَحْمَدَ.'],
+                ['حَزِنَ', 'أَحْمَدُ', 'كَثِيرًا.'],
+                ['أَعْطَاهُ', 'صَدِيقُهُ', 'قَلَمَهُ.'],
+                ['شَكَرَ', 'أَحْمَدُ', 'صَدِيقَهُ.']
+            ],
+            questions: [
+                { q: 'مَاذَا ضَاعَ مِنْ أَحْمَدَ؟', options: ['كِتَابُهُ', 'قَلَمُهُ', 'حَقِيبَتُهُ'], a: 1 },
+                { q: 'مَنْ أَعْطَاهُ قَلَمًا؟', options: ['مُعَلِّمُهُ', 'صَدِيقُهُ', 'أَبُوهُ'], a: 1 }
+            ]
+        },
+        {
+            id: 27, level: 2, title: 'نَافِذَةُ الصَّبَاحِ', value: 'ابدأ يومك بالحمد', emoji: '🌅', color: '#F97316',
+            scaffoldWords: [
+                { word: 'فَتَحَ', syllables: ['فَ','تَ','حَ'] },
+                { word: 'عُمَرُ', syllables: ['عُ','مَ','رُ'] },
+                { word: 'النَّافِذَةَ', syllables: ['النْ','نَا','فِ','ذَ','ةَ'] },
+                { word: 'دَخَلَ', syllables: ['دَ','خَ','لَ'] },
+                { word: 'نُورُ', syllables: ['نُو','رُ'] },
+                { word: 'الصَّبَاحِ', syllables: ['الصْ','صَ','بَا','حِ'] }
+            ],
+            basicPct: 75, advPct: 25,
+            sentences: [
+                ['فَتَحَ', 'عُمَرُ', 'النَّافِذَةَ.'],
+                ['دَخَلَ', 'نُورُ', 'الصَّبَاحِ.'],
+                ['سَمِعَ', 'صَوْتَ', 'العَصَافِيرِ.'],
+                ['حَمِدَ', 'اللهَ', 'وَابْتَسَمَ.']
+            ],
+            questions: [
+                { q: 'مَاذَا فَتَحَ عُمَرُ؟', options: ['البَابَ', 'النَّافِذَةَ', 'الكِتَابَ'], a: 1 },
+                { q: 'مَاذَا سَمِعَ؟', options: ['صَوْتَ المَطَرِ', 'صَوْتَ العَصَافِيرِ', 'صَوْتَ السَّيَّارَاتِ'], a: 1 }
+            ]
+        },
+        {
+            id: 28, level: 2, title: 'رَغِيفُ الجَارِ', value: 'الجار للجار', emoji: '🍞', color: '#D97706',
+            scaffoldWords: [
+                { word: 'خَبَزَتِ', syllables: ['خَ','بَ','زَ','تِ'] },
+                { word: 'الأُمُّ', syllables: ['الْ','أُ','مُّ'] },
+                { word: 'خُبْزًا', syllables: ['خُبْ','زًا'] },
+                { word: 'شَمَّ', syllables: ['شَ','مَّ'] },
+                { word: 'الجَارُ', syllables: ['الْ','جَا','رُ'] },
+                { word: 'الرَّائِحَةَ', syllables: ['الرْ','رَا','ئِ','حَ','ةَ'] }
+            ],
+            basicPct: 75, advPct: 25,
+            sentences: [
+                ['خَبَزَتِ', 'الأُمُّ', 'خُبْزًا.'],
+                ['شَمَّ', 'الجَارُ', 'الرَّائِحَةَ.'],
+                ['أَرْسَلَتْ', 'لَهُ', 'رَغِيفًا.'],
+                ['دَعَا', 'لَهَا', 'الجَارُ.']
+            ],
+            questions: [
+                { q: 'مَاذَا خَبَزَتِ الأُمُّ؟', options: ['كَعْكًا', 'خُبْزًا', 'فَطِيرَةً'], a: 1 },
+                { q: 'مَاذَا فَعَلَ الجَارُ حِينَ وَصَلَهُ الرَّغِيفُ؟', options: ['دَعَا لَهَا', 'رَفَضَهُ', 'بَاعَهُ'], a: 0 }
+            ]
+        },
+        {
+            id: 29, level: 3, title: 'نَخْلَةُ الجَدِّ', value: 'ازرع خيرًا يبقَ بعدك', emoji: '🌴', color: '#dcb897',
+            scaffoldWords: [
+                { word: 'غَرَسَ', syllables: ['غَ','رَ','سَ'] },
+                { word: 'الجَدُّ', syllables: ['الْ','جَ','دُّ'] },
+                { word: 'نَخْلَةً', syllables: ['نَخْ','لَ','ةً'] },
+                { word: 'صَغِيرَةً', syllables: ['صَ','غِي','رَ','ةً'] },
+                { word: 'كَبِرَتِ', syllables: ['كَ','بِ','رَ','تِ'] },
+                { word: 'النَّخْلَةُ', syllables: ['النْ','نَخْ','لَ','ةُ'] }
+            ],
+            basicPct: 62, advPct: 38,
+            sentences: [
+                ['غَرَسَ', 'الجَدُّ', 'نَخْلَةً', 'صَغِيرَةً.'],
+                ['كَبِرَتِ', 'النَّخْلَةُ', 'بَعْدَ', 'سِنِينَ.'],
+                ['أَكَلَ', 'الأَحْفَادُ', 'مِنْ', 'تَمْرِهَا.'],
+                ['ذَكَرُوا', 'جَدَّهُمْ', 'بِكُلِّ', 'خَيْرٍ.']
+            ],
+            questions: [
+                { q: 'مَاذَا غَرَسَ الجَدُّ؟', options: ['وَرْدَةً', 'نَخْلَةً', 'تُفَّاحَةً'], a: 1 },
+                { q: 'مَنْ أَكَلَ مِنْ تَمْرِهَا؟', options: ['الجَدُّ', 'الأَحْفَادُ', 'الجِيرَانُ'], a: 1 }
+            ]
+        },
+        {
+            id: 30, level: 3, title: 'الفَرْخُ الصَّغِيرُ', value: 'الرفق بالضعيف', emoji: '🪺', color: '#0EA5E9',
+            scaffoldWords: [
+                { word: 'وَجَدَ', syllables: ['وَ','جَ','دَ'] },
+                { word: 'كَرِيمٌ', syllables: ['كَ','رِي','مٌ'] },
+                { word: 'عُشًّا', syllables: ['عُ','شًّا'] },
+                { word: 'سَاقِطًا', syllables: ['سَا','قِ','طًا'] },
+                { word: 'كَانَ', syllables: ['كَا','نَ'] },
+                { word: 'فِيهِ', syllables: ['فِي','هِ'] }
+            ],
+            basicPct: 62, advPct: 38,
+            sentences: [
+                ['وَجَدَ', 'كَرِيمٌ', 'عُشًّا', 'سَاقِطًا.'],
+                ['كَانَ', 'فِيهِ', 'فَرْخٌ', 'صَغِيرٌ.'],
+                ['رَفَعَهُ', 'إِلَى', 'الشَّجَرَةِ', 'بِرِفْقٍ.'],
+                ['غَرَّدَتِ', 'الأُمُّ', 'فَرَحًا', 'بِفَرْخِهَا.']
+            ],
+            questions: [
+                { q: 'مَاذَا كَانَ فِي العُشِّ؟', options: ['بَيْضٌ', 'فَرْخٌ صَغِيرٌ', 'لَا شَيْءَ'], a: 1 },
+                { q: 'أَيْنَ وَضَعَ كَرِيمٌ العُشَّ؟', options: ['فِي بَيْتِهِ', 'عَلَى الشَّجَرَةِ', 'عَلَى الأَرْضِ'], a: 1 }
+            ]
+        },
+        {
+            id: 31, level: 3, title: 'صِدْقُ سَالِمٍ', value: 'الصدق ينجي', emoji: '🕊️', color: '#10B981',
+            scaffoldWords: [
+                { word: 'نَسِيَ', syllables: ['نَ','سِ','يَ'] },
+                { word: 'سَالِمٌ', syllables: ['سَا','لِ','مٌ'] },
+                { word: 'دَرْسَهُ', syllables: ['دَرْ','سَ','هُ'] },
+                { word: 'الصَّعْبَ', syllables: ['الصْ','صَعْ','بَ'] },
+                { word: 'خَافَ', syllables: ['خَا','فَ'] },
+                { word: 'سُؤَالِ', syllables: ['سُ','ؤَا','لِ'] }
+            ],
+            basicPct: 62, advPct: 38,
+            sentences: [
+                ['نَسِيَ', 'سَالِمٌ', 'دَرْسَهُ', 'الصَّعْبَ.'],
+                ['خَافَ', 'مِنْ', 'سُؤَالِ', 'المُعَلِّمِ.'],
+                ['صَدَقَ', 'وَأَخْبَرَهُ', 'بِمَا', 'حَدَثَ.'],
+                ['سَامَحَهُ', 'المُعَلِّمُ', 'وَشَرَحَ', 'لَهُ.']
+            ],
+            questions: [
+                { q: 'مَاذَا نَسِيَ سَالِمٌ؟', options: ['حَقِيبَتَهُ', 'دَرْسَهُ', 'قَلَمَهُ'], a: 1 },
+                { q: 'مَاذَا فَعَلَ المُعَلِّمُ حِينَ صَدَقَ سَالِمٌ؟', options: ['عَاقَبَهُ', 'سَامَحَهُ وَشَرَحَ لَهُ', 'تَرَكَهُ'], a: 1 }
+            ]
+        },
+        {
+            id: 32, level: 3, title: 'كُرَةُ الأَصْدِقَاءِ', value: 'التعاون يصنع الفرح', emoji: '🤝', color: '#EF4444',
+            scaffoldWords: [
+                { word: 'جَمَعَ', syllables: ['جَ','مَ','عَ'] },
+                { word: 'الأَصْدِقَاءُ', syllables: ['الْ','أَصْ','دِ','قَا','ءُ'] },
+                { word: 'نُقُودَهُمُ', syllables: ['نُ','قُو','دَ','هُ','مُ'] },
+                { word: 'القَلِيلَةَ', syllables: ['الْ','قَ','لِي','لَ','ةَ'] },
+                { word: 'اشْتَرَوْا', syllables: ['اشْ','تَ','رَوْا'] },
+                { word: 'كُرَةً', syllables: ['كُ','رَ','ةً'] }
+            ],
+            basicPct: 62, advPct: 38,
+            sentences: [
+                ['جَمَعَ', 'الأَصْدِقَاءُ', 'نُقُودَهُمُ', 'القَلِيلَةَ.'],
+                ['اشْتَرَوْا', 'كُرَةً', 'وَاحِدَةً', 'جَدِيدَةً.'],
+                ['لَعِبُوا', 'بِهَا', 'جَمِيعًا', 'فَرِحِينَ.'],
+                ['الكُرَةُ', 'وَاحِدَةٌ', 'وَالفَرْحَةُ', 'كَبِيرَةٌ.']
+            ],
+            questions: [
+                { q: 'مَاذَا جَمَعَ الأَصْدِقَاءُ؟', options: ['كُتُبَهُمْ', 'نُقُودَهُمْ', 'أَلْعَابَهُمْ'], a: 1 },
+                { q: 'كَمْ كُرَةً اشْتَرَوْا؟', options: ['كُرَتَيْنِ', 'كُرَةً وَاحِدَةً', 'ثَلَاثَ كُرَاتٍ'], a: 1 }
+            ]
+        },
+        {
+            id: 33, level: 4, title: 'شَجَرَةُ زَيْدٍ', value: 'من ثابر قطف الثمر', emoji: '🌳', color: '#f15a68',
+            scaffoldWords: [
+                { word: 'مَرِضَتْ', syllables: ['مَ','رِ','ضَتْ'] },
+                { word: 'شَجَرَةُ', syllables: ['شَ','جَ','رَ','ةُ'] },
+                { word: 'الحَدِيقَةِ', syllables: ['الْ','حَ','دِي','قَ','ةِ'] },
+                { word: 'الصَّيْفِ', syllables: ['الصْ','صَيْ','فِ'] },
+                { word: 'سَقَاهَا', syllables: ['سَ','قَا','هَا'] },
+                { word: 'زَيْدٌ', syllables: ['زَيْ','دٌ'] }
+            ],
+            basicPct: 48, advPct: 52,
+            sentences: [
+                ['مَرِضَتْ', 'شَجَرَةُ', 'الحَدِيقَةِ', 'فِي', 'الصَّيْفِ.'],
+                ['سَقَاهَا', 'زَيْدٌ', 'كُلَّ', 'يَوْمٍ', 'بِصَبْرٍ.'],
+                ['عَادَتْ', 'خَضْرَاءَ', 'وَأَثْمَرَتْ', 'فِي', 'الخَرِيفِ.'],
+                ['أَوَّلُ', 'ثَمَرَةٍ', 'كَانَتْ', 'مِنْ', 'نَصِيبِهِ.']
+            ],
+            questions: [
+                { q: 'مَتَى مَرِضَتِ الشَّجَرَةُ؟', options: ['فِي الشِّتَاءِ', 'فِي الصَّيْفِ', 'فِي الرَّبِيعِ'], a: 1 },
+                { q: 'كَيْفَ عَادَتِ الشَّجَرَةُ خَضْرَاءَ؟', options: ['بِالمَطَرِ', 'بِسَقْيِ زَيْدٍ اليَوْمِيِّ', 'وَحْدَهَا'], a: 1 }
+            ]
+        },
+        {
+            id: 34, level: 4, title: 'فَاكِهَةُ البَائِعِ', value: 'الصغير قد يعلّم الكبير', emoji: '🍎', color: '#DC2626',
+            scaffoldWords: [
+                { word: 'سَقَطَتْ', syllables: ['سَ','قَ','طَتْ'] },
+                { word: 'فَاكِهَةُ', syllables: ['فَا','كِ','هَ','ةُ'] },
+                { word: 'البَائِعِ', syllables: ['الْ','بَا','ئِ','عِ'] },
+                { word: 'الأَرْضِ', syllables: ['الْ','أَرْ','ضِ'] },
+                { word: 'ضَحِكَ', syllables: ['ضَ','حِ','كَ'] },
+                { word: 'بَعْضُ', syllables: ['بَعْ','ضُ'] }
+            ],
+            basicPct: 48, advPct: 52,
+            sentences: [
+                ['سَقَطَتْ', 'فَاكِهَةُ', 'البَائِعِ', 'عَلَى', 'الأَرْضِ.'],
+                ['ضَحِكَ', 'بَعْضُ', 'النَّاسِ', 'وَمَشَوْا', 'بَعِيدًا.'],
+                ['وَقَفَ', 'طِفْلٌ', 'صَغِيرٌ', 'يَجْمَعُهَا', 'مَعَهُ.'],
+                ['خَجِلَ', 'الكِبَارُ', 'وَعَادُوا', 'لِيُسَاعِدُوا', 'البَائِعَ.']
+            ],
+            questions: [
+                { q: 'مَاذَا فَعَلَ بَعْضُ النَّاسِ أَوَّلًا؟', options: ['سَاعَدُوا', 'ضَحِكُوا وَمَشَوْا', 'بَكَوْا'], a: 1 },
+                { q: 'مَنْ سَاعَدَ البَائِعَ أَوَّلًا؟', options: ['طِفْلٌ صَغِيرٌ', 'رَجُلٌ كَبِيرٌ', 'شُرْطِيٌّ'], a: 0 }
+            ]
+        },
+        {
+            id: 35, level: 4, title: 'يُوسُفُ وَالظَّلَامُ', value: 'ذكر الله أمان', emoji: '🌙', color: '#6366F1',
+            scaffoldWords: [
+                { word: 'خَافَ', syllables: ['خَا','فَ'] },
+                { word: 'يُوسُفُ', syllables: ['يُو','سُ','فُ'] },
+                { word: 'الظَّلَامِ', syllables: ['الظْ','ظَ','لَا','مِ'] },
+                { word: 'كَثِيرًا', syllables: ['كَ','ثِي','رًا'] },
+                { word: 'أَخْبَرَتْهُ', syllables: ['أَخْ','بَ','رَتْ','هُ'] },
+                { word: 'أُمُّهُ', syllables: ['أُ','مُّ','هُ'] }
+            ],
+            basicPct: 48, advPct: 52,
+            sentences: [
+                ['خَافَ', 'يُوسُفُ', 'مِنَ', 'الظَّلَامِ', 'كَثِيرًا.'],
+                ['أَخْبَرَتْهُ', 'أُمُّهُ', 'أَنَّ', 'اللهَ', 'مَعَهُ.'],
+                ['نَامَ', 'وَهُوَ', 'يَذْكُرُ', 'اللهَ', 'بِقَلْبِهِ.'],
+                ['أَصْبَحَ', 'قَلْبُهُ', 'أَقْوَى', 'مِنْ', 'خَوْفِهِ.']
+            ],
+            questions: [
+                { q: 'مِمَّ خَافَ يُوسُفُ؟', options: ['مِنَ المَطَرِ', 'مِنَ الظَّلَامِ', 'مِنَ القِطَطِ'], a: 1 },
+                { q: 'كَيْفَ نَامَ يُوسُفُ؟', options: ['وَهُوَ يَبْكِي', 'وَهُوَ يَذْكُرُ اللهَ', 'وَهُوَ يَلْعَبُ'], a: 1 }
+            ]
+        },
+        {
+            id: 36, level: 4, title: 'حَقِيبَةُ الحَافِلَةِ', value: 'الأمانة عز', emoji: '👜', color: '#0891B2',
+            scaffoldWords: [
+                { word: 'وَجَدَتْ', syllables: ['وَ','جَ','دَتْ'] },
+                { word: 'لِينَا', syllables: ['لِي','نَا'] },
+                { word: 'حَقِيبَةً', syllables: ['حَ','قِي','بَ','ةً'] },
+                { word: 'الحَافِلَةِ', syllables: ['الْ','حَا','فِ','لَ','ةِ'] },
+                { word: 'كَانَ', syllables: ['كَا','نَ'] },
+                { word: 'فِيهَا', syllables: ['فِي','هَا'] }
+            ],
+            basicPct: 48, advPct: 52,
+            sentences: [
+                ['وَجَدَتْ', 'لِينَا', 'حَقِيبَةً', 'فِي', 'الحَافِلَةِ.'],
+                ['كَانَ', 'فِيهَا', 'مَالٌ', 'كَثِيرٌ', 'وَهَاتِفٌ.'],
+                ['سَلَّمَتْهَا', 'لِلسَّائِقِ', 'أَمَامَ', 'النَّاسِ', 'جَمِيعًا.'],
+                ['عَادَتِ', 'الحَقِيبَةُ', 'إِلَى', 'صَاحِبِهَا', 'الفَرِحِ.']
+            ],
+            questions: [
+                { q: 'مَاذَا كَانَ فِي الحَقِيبَةِ؟', options: ['كُتُبٌ', 'مَالٌ وَهَاتِفٌ', 'طَعَامٌ'], a: 1 },
+                { q: 'لِمَنْ سَلَّمَتْ لِينَا الحَقِيبَةَ؟', options: ['لِأُمِّهَا', 'لِلسَّائِقِ', 'لِصَدِيقَتِهَا'], a: 1 }
+            ]
+        },
+        {
+            id: 37, level: 5, title: 'عِيَادَةُ الصَّدِيقِ', value: 'أخوك من واساك', emoji: '🩹', color: '#2b3044',
+            scaffoldWords: [
+                { word: 'زَارَ', syllables: ['زَا','رَ'] },
+                { word: 'عَلِيٌّ', syllables: ['عَ','لِ','يٌّ'] },
+                { word: 'صَدِيقَهُ', syllables: ['صَ','دِي','قَ','هُ'] },
+                { word: 'المَرِيضَ', syllables: ['الْ','مَ','رِي','ضَ'] },
+                { word: 'المَدْرَسَةِ', syllables: ['الْ','مَدْ','رَ','سَ','ةِ'] },
+                { word: 'حَمَلَ', syllables: ['حَ','مَ','لَ'] }
+            ],
+            basicPct: 36, advPct: 64,
+            sentences: [
+                ['زَارَ', 'عَلِيٌّ', 'صَدِيقَهُ', 'المَرِيضَ', 'بَعْدَ', 'المَدْرَسَةِ.'],
+                ['حَمَلَ', 'لَهُ', 'دَفْتَرَهُ', 'ثُمَّ', 'شَرَحَ', 'الدُّرُوسَ.'],
+                ['تَحَسَّنَ', 'المَرِيضُ', 'وَعَادَ', 'إِلَى', 'المَدْرَسَةِ', 'فَرِحًا.'],
+                ['نَجَحَا', 'مَعًا', 'فِي', 'آخِرِ', 'العَامِ', 'الدِّرَاسِيِّ.']
+            ],
+            questions: [
+                { q: 'مَتَى زَارَ عَلِيٌّ صَدِيقَهُ؟', options: ['قَبْلَ المَدْرَسَةِ', 'بَعْدَ المَدْرَسَةِ', 'يَوْمَ العُطْلَةِ'], a: 1 },
+                { q: 'مَاذَا حَمَلَ لَهُ؟', options: ['طَعَامًا', 'دَفْتَرَهُ', 'لُعْبَةً'], a: 1 }
+            ]
+        },
+        {
+            id: 38, level: 5, title: 'دَرَّاجَةُ نُورَةَ', value: 'المحاولة طريق النجاح', emoji: '🚲', color: '#BE185D',
+            scaffoldWords: [
+                { word: 'حَاوَلَتْ', syllables: ['حَا','وَ','لَتْ'] },
+                { word: 'نُورَةُ', syllables: ['نُو','رَ','ةُ'] },
+                { word: 'رُكُوبَ', syllables: ['رُ','كُو','بَ'] },
+                { word: 'الدَّرَّاجَةِ', syllables: ['الدْ','دَ','رَّا','جَ','ةِ'] },
+                { word: 'فَسَقَطَتْ', syllables: ['فَ','سَ','قَ','طَتْ'] },
+                { word: 'أَرْضًا', syllables: ['أَرْ','ضًا'] }
+            ],
+            basicPct: 36, advPct: 64,
+            sentences: [
+                ['حَاوَلَتْ', 'نُورَةُ', 'رُكُوبَ', 'الدَّرَّاجَةِ', 'فَسَقَطَتْ', 'أَرْضًا.'],
+                ['لَمْ', 'تَيْأَسْ', 'بَلْ', 'حَاوَلَتْ', 'كُلَّ', 'مَسَاءٍ.'],
+                ['بَعْدَ', 'أُسْبُوعٍ', 'سَبَقَتْ', 'أَخَاهَا', 'فِي', 'السِّبَاقِ.'],
+                ['مَنْ', 'يُحَاوِلْ', 'لَا', 'يَبْقَ', 'فِي', 'مَكَانِهِ.']
+            ],
+            questions: [
+                { q: 'مَاذَا حَدَثَ فِي أَوَّلِ مُحَاوَلَةٍ؟', options: ['نَجَحَتْ', 'سَقَطَتْ', 'خَافَتْ'], a: 1 },
+                { q: 'مَتَى سَبَقَتْ أَخَاهَا؟', options: ['بَعْدَ يَوْمٍ', 'بَعْدَ أُسْبُوعٍ', 'بَعْدَ سَنَةٍ'], a: 1 }
+            ]
+        },
+        {
+            id: 39, level: 5, title: 'قِصَّةُ كُلِّ لَيْلَةٍ', value: 'القليل الدائم خير', emoji: '📚', color: '#7C3AED',
+            scaffoldWords: [
+                { word: 'قَرَأَ', syllables: ['قَ','رَ','أَ'] },
+                { word: 'حَمْزَةُ', syllables: ['حَمْ','زَ','ةُ'] },
+                { word: 'قِصَّةً', syllables: ['قِ','صَّ','ةً'] },
+                { word: 'النَّوْمِ', syllables: ['النْ','نَوْ','مِ'] },
+                { word: 'لَيْلَةٍ', syllables: ['لَيْ','لَ','ةٍ'] },
+                { word: 'البِدَايَةِ', syllables: ['الْ','بِ','دَا','يَ','ةِ'] }
+            ],
+            basicPct: 36, advPct: 64,
+            sentences: [
+                ['قَرَأَ', 'حَمْزَةُ', 'قِصَّةً', 'قَبْلَ', 'النَّوْمِ', 'كُلَّ', 'لَيْلَةٍ.'],
+                ['فِي', 'البِدَايَةِ', 'كَانَ', 'يَقْرَأُ', 'الكَلِمَاتِ', 'بِبُطْءٍ.'],
+                ['بَعْدَ', 'شَهْرٍ', 'صَارَ', 'يَقْرَأُ', 'بِطَلَاقَةٍ', 'وَفَرَحٍ.'],
+                ['القَلِيلُ', 'الدَّائِمُ', 'خَيْرٌ', 'مِنَ', 'الكَثِيرِ', 'المُنْقَطِعِ.']
+            ],
+            questions: [
+                { q: 'مَتَى كَانَ حَمْزَةُ يَقْرَأُ؟', options: ['فِي الصَّبَاحِ', 'قَبْلَ النَّوْمِ', 'فِي المَدْرَسَةِ'], a: 1 },
+                { q: 'كَيْفَ صَارَ يَقْرَأُ بَعْدَ شَهْرٍ؟', options: ['بِبُطْءٍ', 'بِطَلَاقَةٍ وَفَرَحٍ', 'لَمْ يَتَغَيَّرْ'], a: 1 }
+            ]
+        },
+        {
+            id: 40, level: 5, title: 'الصَّدِيقَانِ وَالمَقْعَدُ', value: 'الاعتذار شجاعة', emoji: '🤗', color: '#0e8a9c',
+            scaffoldWords: [
+                { word: 'اخْتَلَفَ', syllables: ['اخْ','تَ','لَ','فَ'] },
+                { word: 'صَدِيقَانِ', syllables: ['صَ','دِي','قَا','نِ'] },
+                { word: 'مَقْعَدٍ', syllables: ['مَقْ','عَ','دٍ'] },
+                { word: 'الصَّفِّ', syllables: ['الصْ','صَ','فِّ'] },
+                { word: 'غَضِبَ', syllables: ['غَ','ضِ','بَ'] },
+                { word: 'مِنْهُمَا', syllables: ['مِنْ','هُ','مَا'] }
+            ],
+            basicPct: 36, advPct: 64,
+            sentences: [
+                ['اخْتَلَفَ', 'صَدِيقَانِ', 'عَلَى', 'مَقْعَدٍ', 'فِي', 'الصَّفِّ.'],
+                ['غَضِبَ', 'كُلٌّ', 'مِنْهُمَا', 'وَلَمْ', 'يَتَكَلَّمَا', 'يَوْمًا.'],
+                ['اشْتَاقَ', 'كُلٌّ', 'مِنْهُمَا', 'إِلَى', 'صَاحِبِهِ', 'كَثِيرًا.'],
+                ['اعْتَذَرَا', 'مَعًا', 'ثُمَّ', 'ضَحِكَا', 'مِنْ', 'غَضَبِهِمَا.']
+            ],
+            questions: [
+                { q: 'عَلَامَ اخْتَلَفَ الصَّدِيقَانِ؟', options: ['عَلَى كُرَةٍ', 'عَلَى مَقْعَدٍ', 'عَلَى كِتَابٍ'], a: 1 },
+                { q: 'كَيْفَ انْتَهَى الخِلَافُ؟', options: ['اعْتَذَرَا مَعًا', 'تَشَاجَرَا', 'افْتَرَقَا'], a: 0 }
+            ]
+        }
+    ];
+
+    const levelLabels = {
+        1: { name: 'المستوى الأول', color: '#0e8a9c',
+             words: 'جملة من كلمتين — ٤ جمل في القصة (٨ كلمات)',
+             lang: 'أفعال ماضية بسيطة بالحركات الثلاث، بلا أدوات ربط',
+             values: 'الشكر، الصبر، الرفق، مساعدة الكبير، العطاء، النهوض بعد السقوط' },
+        2: { name: 'المستوى الثاني', color: '#086974',
+             words: 'جملة من ثلاث كلمات — ٤ جمل في القصة (١٢ كلمة)',
+             lang: 'فعل + فاعل + مفعول أو ظرف، مع مدود وسكون',
+             values: 'المشاركة، المسؤولية، المثابرة، حسن الجوار، الحمد، الصداقة' },
+        3: { name: 'المستوى الثالث', color: '#dcb897',
+             words: 'جملة من أربع كلمات — ٤ جمل في القصة (١٦ كلمة)',
+             lang: 'جمل موصوفة (نعت وجار ومجرور)، شدة وتنوين أكثر',
+             values: 'التعاون، العناية، الوفاء، الأدب، الصدق، الرفق بالضعيف' },
+        4: { name: 'المستوى الرابع', color: '#f15a68',
+             words: 'جملة من خمس كلمات — ٤ جمل في القصة (٢٠ كلمة)',
+             lang: 'جمل مركبة بظرف زمان ومكان وحال، تنوين بأنواعه',
+             values: 'الصدق والشجاعة، بر الكبار، الاجتهاد، حب العلم، الأمانة، ذكر الله' },
+        5: { name: 'المستوى الخامس', color: '#2b3044',
+             words: 'جملة من ست كلمات فأكثر — ٤ جمل في القصة (٢٤+ كلمة)',
+             lang: 'أدوات ربط (ثُمَّ، لَكِنَّ، فَـ، حَتَّى) وجمل تنتهي بحكمة',
+             values: 'التشجيع، التأمل، التسامح، المواساة، المحاولة، الاعتذار' }
+    };
+
+    // ====== SOUND ======
+    let audioCtx = null;
+    const playSound = (type) => {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            if (type==='correct'){osc.frequency.value=880;gain.gain.value=0.15;osc.start();osc.stop(audioCtx.currentTime+0.15);}
+            else if(type==='error'){osc.frequency.value=200;osc.type='sawtooth';gain.gain.value=0.1;osc.start();osc.stop(audioCtx.currentTime+0.2);}
+            else if(type==='pop'){osc.frequency.value=600;gain.gain.value=0.1;osc.start();osc.stop(audioCtx.currentTime+0.08);}
+            else{osc.frequency.value=523;gain.gain.value=0.12;osc.start();osc.stop(audioCtx.currentTime+0.3);}
+        } catch(e){}
+    };
+
+    // ====== MAIN APP ======
+    function App() {
+        const [view, setView] = useState('menu'); // menu, scaffold, reading
+        const [currentStory, setCurrentStory] = useState(null);
+        const [sentIdx, setSentIdx] = useState(0);
+        const [wordIdx, setWordIdx] = useState(0);
+        const [done, setDone] = useState(false);
+        const [qPhase, setQPhase] = useState(false);
+        const [qIdx, setQIdx] = useState(0);
+        const [qSel, setQSel] = useState(null);
+        const [qResults, setQResults] = useState([]);
+        const [filterLevel, setFilterLevel] = useState(0);
+        const [scaffoldIdx, setScaffoldIdx] = useState(0);
+        const [scaffoldFlip, setScaffoldFlip] = useState(false);
+
+        const openStory = (story) => {
+            setCurrentStory(story);
+            setSentIdx(0); setWordIdx(0); setDone(false);
+            setQPhase(false); setQIdx(0); setQSel(null); setQResults([]);
+            setScaffoldIdx(0); setScaffoldFlip(false);
+            setView('scaffold');
+        };
+
+        const advanceWord = () => {
+            const s = currentStory;
+            const sent = s.sentences[sentIdx];
+            if (wordIdx < sent.length - 1) { setWordIdx(wordIdx + 1); }
+            else if (sentIdx < s.sentences.length - 1) { setSentIdx(sentIdx + 1); setWordIdx(0); }
+            else { setDone(true); }
+            playSound('pop');
+        };
+
+        const filtered = filterLevel === 0 ? storiesData : storiesData.filter(s => s.level === filterLevel);
+
+        // ====== MENU VIEW ======
+        if (view === 'menu') {
+            return (
+                <div className="min-h-screen bg-badeec-sky">
+                    <header className="text-center py-8">
+                        <div className="bg-badeec-teal/10 text-badeec-teal px-5 py-1.5 rounded-full inline-flex items-center gap-2 text-sm font-bold mb-3">📚 القراءة المصوّرة</div>
+                        <h1 className="text-4xl md:text-5xl font-black font-baloo text-badeec-navy mb-2">القصص المصوّرة</h1>
+                        <p className="text-base text-slate-500">٤٠ قصة بالتدرج — من جملة الكلمتين إلى الجمل المترابطة</p>
+                    </header>
+
+                    {/* Level Filter */}
+                    <div className="flex justify-center gap-2 mb-6 flex-wrap px-4">
+                        <button onClick={() => setFilterLevel(0)}
+                            className={`px-5 py-2 rounded-full text-sm font-black transition-all border-2 ${filterLevel === 0 ? 'bg-badeec-navy text-white border-badeec-navy shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-badeec-teal'}`}>
+                            الكل ({storiesData.length})
+                        </button>
+                        {[1,2,3,4,5].map(l => (
+                            <button key={l} onClick={() => setFilterLevel(l)}
+                                className={`px-5 py-2 rounded-full text-sm font-black transition-all border-2 ${filterLevel === l ? 'text-white shadow-md' : 'bg-white text-slate-500 border-slate-200 hover:border-badeec-teal'}`}
+                                style={filterLevel === l ? { backgroundColor: levelLabels[l].color, borderColor: levelLabels[l].color } : {}}>
+                                {levelLabels[l].name} ({storiesData.filter(s=>s.level===l).length})
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Level info — بطاقة توصيف للمعلم */}
+                    {filterLevel > 0 && (
+                        <div className="flex justify-center mb-6 px-4">
+                            <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-sm px-6 py-4 max-w-2xl w-full text-right space-y-2">
+                                <div className="flex items-center gap-2 justify-between flex-wrap">
+                                    <span className="font-black text-lg" style={{ color: levelLabels[filterLevel].color === '#dcb897' ? '#b8926a' : levelLabels[filterLevel].color }}>📋 دليل المعلم — {levelLabels[filterLevel].name}</span>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                    <div className="bg-badeec-sky rounded-2xl p-3">
+                                        <div className="font-black text-badeec-teal mb-1">🔢 عدد الكلمات</div>
+                                        <div className="font-bold text-slate-600 leading-relaxed">{levelLabels[filterLevel].words}</div>
+                                    </div>
+                                    <div className="bg-badeec-sky rounded-2xl p-3">
+                                        <div className="font-black text-badeec-teal mb-1">🔤 شكل اللغة</div>
+                                        <div className="font-bold text-slate-600 leading-relaxed">{levelLabels[filterLevel].lang}</div>
+                                    </div>
+                                    <div className="bg-badeec-sky rounded-2xl p-3">
+                                        <div className="font-black text-badeec-teal mb-1">💎 القيم التربوية</div>
+                                        <div className="font-bold text-slate-600 leading-relaxed">{levelLabels[filterLevel].values}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Stories Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-6 md:px-8 pb-12 max-w-7xl mx-auto">
+                        {filtered.map(story => {
+                            const Illust = illustrations[story.illustration];
+                            return (
+                                <button key={story.id} onClick={() => openStory(story)}
+                                    className="bg-white rounded-[2rem] overflow-hidden border-4 border-slate-200 hover:border-badeec-teal hover:-translate-y-1 hover:shadow-xl transition-all group text-right shadow-sm">
+                                    <div className="relative overflow-hidden">
+                                        {Illust ? <Illust/> : <div className="h-36 flex items-center justify-center text-7xl" style={{ backgroundColor: story.color + '22' }}>{story.emoji}</div>}
+                                        <div className="absolute top-3 right-3 px-3 py-1.5 rounded-full text-xs font-black text-white shadow-sm" style={{ backgroundColor: levelLabels[story.level].color }}>
+                                            المستوى {story.level}
+                                        </div>
+                                        <div className="absolute bottom-3 left-3 text-3xl">{story.emoji}</div>
+                                    </div>
+                                    <div className="p-5">
+                                        <h3 className="font-naskh text-xl font-bold text-badeec-navy mb-1 overflow-visible leading-relaxed">{story.title}</h3>
+                                        <p className="text-sm text-slate-500 font-bold">{story.value}</p>
+                                        <div className="flex h-2 w-full rounded-full overflow-hidden mt-3 bg-slate-100" style={{ direction: 'ltr' }}>
+                                            <div style={{ width: story.basicPct + '%' }} className="bg-badeec-teal rounded-full"></div>
+                                            <div style={{ width: story.advPct + '%', backgroundColor: story.color }} className="rounded-full"></div>
+                                        </div>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        // ====== SCAFFOLD WORDS VIEW ======
+        if (view === 'scaffold' && currentStory) {
+            const story = currentStory;
+            const Illust = illustrations[story.illustration];
+            const words = story.scaffoldWords || [];
+            const currentWord = words[scaffoldIdx];
+            const progress = words.length > 0 ? ((scaffoldIdx + 1) / words.length) * 100 : 0;
+
+            return (
+                <div className="min-h-screen flex flex-col bg-badeec-sky">
+                    <div className="flex items-center justify-between p-4 bg-white border-b-4 border-slate-200 shadow-sm">
+                        <button onClick={() => setView('menu')} className="flex items-center gap-2 px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-badeec-navy font-black text-sm transition-all">
+                            → العودة
+                        </button>
+                        <div className="flex items-center gap-2">
+                            <span className="text-2xl">{story.emoji}</span>
+                            <span className="font-naskh text-xl text-badeec-navy font-bold overflow-visible leading-relaxed">{story.title}</span>
+                        </div>
+                        <div className="px-4 py-1.5 rounded-full text-xs font-black text-white bg-amber-500">
+                            تهيئة الكلمات
+                        </div>
+                    </div>
+
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 max-w-2xl mx-auto w-full">
+                        <div className="text-center mb-2">
+                            <h2 className="text-3xl font-black text-badeec-navy font-baloo mb-1">🔤 كلمات القصة</h2>
+                            <p className="text-slate-500 font-bold">تعرّف على الكلمات قبل قراءة القصة</p>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-badeec-teal rounded-full transition-all duration-500" style={{ width: progress + '%' }}></div>
+                        </div>
+                        <p className="text-sm text-slate-500 font-bold">{scaffoldIdx + 1} / {words.length}</p>
+
+                        {/* Word Card */}
+                        {currentWord && (
+                            <div onClick={() => { setScaffoldFlip(!scaffoldFlip); playSound('pop'); }}
+                                className="w-full bg-white rounded-[2rem] border-4 border-slate-200 p-8 cursor-pointer hover:border-badeec-teal transition-all transform hover:scale-[1.02] min-h-[200px] flex flex-col items-center justify-center gap-6 shadow-sm">
+                                {!scaffoldFlip ? (
+                                    <>
+                                        <div className="font-naskh text-5xl md:text-6xl text-badeec-navy font-bold overflow-visible leading-relaxed">{currentWord.word}</div>
+                                        <p className="text-slate-400 text-sm font-bold">اضغط لرؤية المقاطع</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="flex gap-3 flex-wrap justify-center">
+                                            {currentWord.syllables.map((syl, si) => (
+                                                <span key={si} className="font-naskh text-4xl md:text-5xl px-5 py-2 rounded-2xl text-badeec-navy font-bold overflow-visible leading-relaxed bg-badeec-teal/10 border-2 border-badeec-teal">
+                                                    {syl}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <div className="flex gap-1 items-center text-2xl text-slate-500">
+                                            {currentWord.syllables.map((syl, si) => (
+                                                <React.Fragment key={si}>
+                                                    <span className="font-naskh overflow-visible">{syl}</span>
+                                                    {si < currentWord.syllables.length - 1 && <span className="text-slate-400 mx-1">+</span>}
+                                                </React.Fragment>
+                                            ))}
+                                            <span className="text-slate-400 mx-2">=</span>
+                                            <span className="font-naskh font-bold text-badeec-teal overflow-visible">{currentWord.word}</span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Word dots */}
+                        <div className="flex gap-2 flex-wrap justify-center">
+                            {words.map((w, i) => (
+                                <div key={i} className="w-3 h-3 rounded-full transition-all" style={{
+                                    backgroundColor: i < scaffoldIdx ? '#0e8a9c' : i === scaffoldIdx ? '#f15a68' : '#cbd5e1',
+                                    transform: i === scaffoldIdx ? 'scale(1.3)' : 'scale(1)'
+                                }}></div>
+                            ))}
+                        </div>
+
+                        {/* Controls */}
+                        <div className="w-full flex gap-4">
+                            {scaffoldIdx < words.length - 1 ? (
+                                <button onClick={() => { setScaffoldIdx(scaffoldIdx + 1); setScaffoldFlip(false); playSound('pop'); }}
+                                    className="flex-1 py-4 rounded-2xl text-xl font-black text-white bg-badeec-teal transition-all hover:bg-badeec-deep active:scale-95 shadow-md">
+                                    الكلمة التالية ← ({scaffoldIdx + 2}/{words.length})
+                                </button>
+                            ) : (
+                                <button onClick={() => { setView('reading'); playSound('correct'); }}
+                                    className="flex-1 py-4 rounded-2xl text-xl font-black text-white bg-badeec-coral transition-all hover:bg-rose-500 active:scale-95 shadow-md animate-pulse">
+                                    ابدأ القراءة 📖
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ====== READING VIEW ======
+        if (view === 'reading' && currentStory) {
+            const story = currentStory;
+            const Illust = illustrations[story.illustration];
+            const allQDone = qIdx >= story.questions.length;
+
+            return (
+                <div className="min-h-screen flex flex-col bg-badeec-sky">
+                    {/* Top bar */}
+                    <div className="flex items-center justify-between p-4 bg-white border-b-4 border-slate-200 shadow-sm">
+                        <button onClick={() => setView('menu')} className="flex items-center gap-2 px-5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-badeec-navy font-black text-sm transition-all">
+                            → العودة
+                        </button>
+                        <div className="flex items-center gap-2">
+                            <span className="text-2xl">{story.emoji}</span>
+                            <span className="font-naskh text-xl text-badeec-navy font-bold overflow-visible leading-relaxed">{story.title}</span>
+                        </div>
+                        <div className="px-4 py-1.5 rounded-full text-xs font-black text-white" style={{ backgroundColor: story.color }}>
+                            {story.value}
+                        </div>
+                    </div>
+
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6 max-w-3xl mx-auto w-full">
+                        {/* Illustration */}
+                        <div className="w-full rounded-[2rem] overflow-hidden shadow-lg border-4 border-slate-200 bg-white">
+                            {story.hasImages ? (
+                                <img
+                                    src={'story_images/s' + String(story.id).padStart(2,'0') + '_' + String(sentIdx + 1).padStart(2,'0') + '.png'}
+                                    alt={story.title + ' - ' + (sentIdx+1)}
+                                    className="w-full h-auto"
+                                    style={{display:'block'}}
+                                />
+                            ) : Illust ? <Illust/> : null}
+                        </div>
+
+                        {/* Story text */}
+                        <div className="bg-white rounded-[2rem] p-6 w-full border-4 border-slate-200 shadow-sm">
+                            <div className="space-y-4">
+                                {story.sentences.map((sent, si) => (
+                                    <div key={si} className="flex flex-wrap gap-3 items-center font-naskh text-2xl md:text-3xl leading-relaxed overflow-visible">
+                                        <span className="w-7 h-7 rounded-full text-white text-xs font-black flex items-center justify-center flex-shrink-0 bg-badeec-teal">
+                                            {si + 1}
+                                        </span>
+                                        {sent.map((word, wi) => {
+                                            const isRevealed = si < sentIdx || (si === sentIdx && wi <= wordIdx);
+                                            const isCurrent = si === sentIdx && wi === wordIdx && !done;
+                                            return (
+                                                <span key={wi}
+                                                    className={`px-2 py-1 rounded-xl transition-all duration-300 overflow-visible ${isCurrent ? 'ring-2 ring-badeec-coral scale-110 bg-badeec-teal/10 shadow-md' : ''}`}
+                                                    style={{
+                                                        filter: isRevealed ? 'none' : 'blur(8px)',
+                                                        opacity: isRevealed ? 1 : 0.15,
+                                                        color: isCurrent ? '#0e8a9c' : isRevealed ? '#2b3044' : '#94a3b8'
+                                                    }}>
+                                                    {word}
+                                                </span>
+                                            );
+                                        })}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Controls */}
+                        <div className="w-full">
+                            {!done ? (
+                                <button onClick={advanceWord}
+                                    className="w-full py-4 rounded-2xl text-xl font-black text-white bg-badeec-teal transition-all hover:bg-badeec-deep active:scale-95 shadow-md animate-pulse">
+                                    الكلمة التالية ←
+                                </button>
+                            ) : !qPhase ? (
+                                <button onClick={() => { setQPhase(true); playSound('correct'); }}
+                                    className="w-full py-4 rounded-2xl text-xl font-black text-white bg-badeec-coral transition-all hover:bg-rose-500 active:scale-95 shadow-md">
+                                    أسئلة الفهم ❓
+                                </button>
+                            ) : !allQDone ? (
+                                <div className="bg-white rounded-[2rem] p-6 border-4 border-slate-200 shadow-sm">
+                                    <p className="font-naskh text-2xl text-center text-badeec-navy mb-4 font-bold overflow-visible leading-relaxed">{story.questions[qIdx].q}</p>
+                                    <div className="flex flex-col gap-3">
+                                        {story.questions[qIdx].options.map((opt, oi) => {
+                                            const isCorrect = oi === story.questions[qIdx].a;
+                                            const isSel = qSel === oi;
+                                            let cls = 'bg-slate-50 hover:bg-slate-100 text-badeec-navy border-slate-200';
+                                            if (isSel && isCorrect) cls = 'bg-emerald-50 ring-2 ring-emerald-500 text-emerald-700 border-emerald-300';
+                                            if (isSel && !isCorrect) cls = 'bg-red-50 ring-2 ring-red-400 text-red-700 border-red-300';
+                                            return (
+                                                <button key={oi} disabled={qSel !== null}
+                                                    onClick={() => {
+                                                        setQSel(oi);
+                                                        playSound(isCorrect ? 'correct' : 'error');
+                                                        setTimeout(() => { setQResults([...qResults, isCorrect]); setQIdx(qIdx+1); setQSel(null); }, 1000);
+                                                    }}
+                                                    className={`font-naskh text-xl p-4 rounded-2xl border-2 transition-all overflow-visible leading-relaxed font-bold ${cls}`}>
+                                                    {opt}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-white rounded-[2rem] border-4 border-slate-200 shadow-sm p-8 text-center space-y-4">
+                                    <div className="text-6xl">🌟</div>
+                                    <p className="text-2xl font-black text-badeec-navy">أحسنت! أنهيت القصة</p>
+                                    <p className="text-lg font-bold text-badeec-teal">✅ {qResults.filter(Boolean).length} / {story.questions.length} إجابات صحيحة</p>
+                                    <div className="flex gap-4 justify-center mt-4">
+                                        <button onClick={() => setView('menu')}
+                                            className="px-8 py-3 rounded-2xl bg-slate-100 text-badeec-navy text-lg font-black hover:bg-slate-200 transition-all border-2 border-slate-200">
+                                            القائمة
+                                        </button>
+                                        {story.id < 20 && (
+                                            <button onClick={() => openStory(storiesData[story.id])}
+                                                className="px-8 py-3 rounded-2xl text-white text-lg font-black bg-badeec-teal hover:bg-badeec-deep transition-all shadow-md">
+                                                القصة التالية ←
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+    </script>
+</body>
+</html>

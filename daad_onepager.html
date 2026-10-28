@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="بطاقة تعريفية في صفحة واحدة — مستوى ضاد: كل ساعة نصفها حركات ونصفها محادثة، ١٦ ساعة للمستوى.">
+<title>مستوى ضاد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&family=Cairo:wght@400;600;700;900&family=Scheherazade+New:wght@700&display=swap">
+
+<style>
+:root{
+  --teal:#0e8a9c;
+  --deep:#086974;
+  --coral:#f15a68;
+  --coral-d:#d63d4c;
+  --navy:#2b3044;
+  --sand:#dcb897;
+  --sky:#eef8f9;
+  --paper:#ffffff;
+  --muted:#5f7379;
+  --ground:#dce9ea;
+  --ground-2:#c9dde0;
+
+  --display:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif;
+  --body:'Cairo',system-ui,-apple-system,sans-serif;
+  --naskh:'Scheherazade New','Noto Naskh Arabic',serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){ --ground:#0d2a2e; --ground-2:#071c1f; }
+}
+:root[data-theme="dark"]{ --ground:#0d2a2e; --ground-2:#071c1f; }
+
+*{box-sizing:border-box}
+body{
+  margin:0;direction:rtl;
+  font-family:var(--body);color:var(--navy);
+  background:linear-gradient(160deg,var(--ground),var(--ground-2));
+  padding-block:26px;padding-inline:16px;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.wrap{display:flex;flex-direction:column;align-items:center;gap:20px}
+
+.sheet{
+  width:210mm;max-width:100%;min-height:297mm;
+  background:var(--paper);
+  padding:10mm 11mm 8mm;
+  display:flex;flex-direction:column;gap:5mm;
+  box-shadow:0 18px 44px rgba(8,45,52,.26);
+  border-radius:3px;overflow:hidden;position:relative;
+}
+
+h1,h2,h3{margin:0;font-family:var(--display);line-height:1.25;text-wrap:balance}
+p{margin:0}
+
+/* ---------- header ---------- */
+.head{display:flex;align-items:center;gap:5mm}
+.mark{
+  width:18mm;height:18mm;border-radius:5mm;background:var(--coral);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-family:var(--display);font-weight:800;font-size:24pt;color:#fff;
+  box-shadow:0 5px 14px rgba(241,90,104,.3);
+}
+.head h1{font-size:22pt;font-weight:800}
+.head .sub{font-size:10.5pt;font-weight:700;color:var(--teal);margin-top:1.5mm}
+
+/* ---------- section title ---------- */
+.st{
+  font-family:var(--display);font-size:13.5pt;font-weight:800;color:var(--navy);
+  display:flex;align-items:center;gap:3mm;margin-bottom:2.8mm;
+}
+.st .tail{font-family:var(--body);font-size:9.5pt;font-weight:600;color:var(--muted)}
+.st::after{content:'';flex:1;height:2px;background:var(--sky);border-radius:2px}
+
+/* ---------- the hour, split ---------- */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
+.half{border-radius:5mm;padding:4mm;color:#fff;text-align:center}
+.half--hrk{background:linear-gradient(135deg,var(--teal),var(--deep))}
+.half--talk{background:linear-gradient(135deg,var(--coral),var(--coral-d))}
+.h-min{
+  display:inline-block;font-family:var(--display);font-size:10pt;font-weight:800;
+  background:rgba(255,255,255,.24);border-radius:99px;padding:1mm 4.5mm;
+}
+.h-name{display:block;font-family:var(--display);font-size:16pt;font-weight:800;margin-top:2mm;line-height:1.2}
+.h-sub{display:block;font-size:9pt;font-weight:600;opacity:.9;margin-top:1mm}
+
+.total{
+  margin-top:3mm;background:var(--navy);border-radius:5mm;
+  padding:3.5mm;text-align:center;
+}
+.total .big{font-family:var(--display);font-size:15.5pt;font-weight:800;color:var(--sand);line-height:1.2}
+.total .eq{display:block;font-size:9.5pt;font-weight:700;color:#bdd0d4;margin-top:1.5mm}
+
+/* ---------- levels ---------- */
+.lv{width:100%;border-collapse:separate;border-spacing:0 1.4mm}
+.lv th{
+  font-family:var(--display);font-size:10.5pt;font-weight:800;color:#fff;
+  background:var(--navy);padding:2mm 3.5mm;text-align:right;
+}
+.lv th:first-child{border-radius:0 3.5mm 3.5mm 0}
+.lv th:last-child{border-radius:3.5mm 0 0 3.5mm}
+.lv td{padding:2.1mm 3.5mm;background:#fbfdfd;vertical-align:middle;line-height:1.4}
+.lv tr td:first-child{border-radius:0 3.5mm 3.5mm 0}
+.lv tr td:last-child{border-radius:3.5mm 0 0 3.5mm}
+.badge{
+  display:flex;align-items:center;justify-content:center;
+  width:8mm;height:8mm;border-radius:2.3mm;color:#fff;
+  font-family:var(--display);font-size:10.5pt;font-weight:800;
+}
+.hrk-c{font-size:9.8pt;font-weight:800;color:var(--deep)}
+.hrk-c small{
+  display:block;font-family:var(--naskh);font-size:11.5pt;font-weight:700;
+  color:var(--muted);margin-top:.3mm;
+}
+.talk-c{font-size:9.8pt;font-weight:800;color:var(--coral-d)}
+.talk-c small{
+  display:block;font-family:var(--naskh);font-size:11pt;font-weight:700;
+  color:var(--muted);margin-top:.3mm;
+}
+
+/* ---------- stories band ---------- */
+.stories{
+  background:var(--sky);border:2px solid #bde0e5;border-radius:5mm;
+  padding:3.5mm 4.5mm;display:flex;align-items:center;gap:4mm;flex-wrap:wrap;
+}
+.stories .lbl{flex:1;min-width:52mm}
+.stories h3{font-size:11.5pt;font-weight:800;color:var(--deep)}
+.stories .note{font-size:9pt;font-weight:600;color:var(--muted);margin-top:1mm;line-height:1.5}
+.arc{display:flex;align-items:center;gap:2.5mm;font-family:var(--naskh);font-weight:700}
+.arc .a{background:#fff;border-radius:3mm;padding:1.2mm 3mm;font-size:11.5pt;color:var(--navy)}
+.arc .to{font-family:var(--body);font-size:11pt;font-weight:800;color:var(--teal)}
+
+/* ---------- outcome ---------- */
+.out{margin-top:auto}
+.out-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2.5mm}
+.oc{background:var(--navy);border-radius:4mm;padding:3.2mm 2.5mm;text-align:center}
+.oc .v{font-family:var(--display);font-size:15pt;font-weight:800;color:var(--sand);line-height:1}
+.oc .l{display:block;font-size:8.2pt;font-weight:700;color:#cfdce0;margin-top:1.4mm;line-height:1.4}
+
+/* ---------- print ---------- */
+@page{size:A4;margin:0}
+@media print{
+  body{background:#fff;padding:0;margin:0}
+  .wrap{gap:0}
+  .screen-only{display:none!important}
+  .sheet{box-shadow:none;border-radius:0;width:210mm;height:297mm;overflow:hidden}
+}
+
+.screen-only{
+  max-width:210mm;width:100%;
+  background:rgba(255,255,255,.9);border:1.5px solid rgba(255,255,255,.7);
+  border-radius:4mm;padding:4mm 5mm;
+  font-size:10pt;color:var(--deep);font-weight:600;
+  display:flex;gap:3mm;align-items:center;line-height:1.7;
+  box-shadow:0 6px 18px rgba(8,45,52,.14);
+}
+
+/* ---------- small screens ---------- */
+@media screen and (max-width:780px){
+  .sheet{padding:9mm 7mm 10mm;min-height:0;gap:8mm}
+  .head{flex-wrap:wrap;gap:4mm}
+  .head h1{font-size:19pt}
+  .split,.out-grid{grid-template-columns:1fr 1fr}
+  .h-name{font-size:16pt}
+  .total .big{font-size:16pt}
+  .lv th,.lv td{padding:2.6mm}
+  .hrk-c,.talk-c{font-size:9.8pt}
+  .hrk-c small,.talk-c small{font-size:11pt}
+  .arc{width:100%;justify-content:space-between}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<div class="screen-only">
+  <span>📄</span>
+  <span>صفحةٌ واحدةٌ بمقاس <b>A4</b> — أرسلها كما هي للأهل، أو احفظها PDF بـ Ctrl+P مع ضبط الهوامش على «بلا» وتفعيل «رسوم الخلفية».</span>
+</div>
+
+<section class="sheet">
+
+  <!-- ===== الترويسة ===== -->
+  <div class="head">
+    <div class="mark">ضـ</div>
+    <div>
+      <h1>مُسْتَوَى ضاد</h1>
+      <div class="sub">نُعلِّمُ الطفلَ أن يقرأَ الصوتَ، لا أن يحفظَ اسمَ الحرفِ</div>
+    </div>
+  </div>
+
+  <!-- ===== ١ · الساعة نصفان ===== -->
+  <div>
+    <div class="st">كلُّ ساعةٍ نصفان</div>
+
+    <div class="split">
+      <div class="half half--hrk">
+        <span class="h-min">٣٠ دقيقة</span>
+        <span class="h-name">الحَرَكات</span>
+        <span class="h-sub">يتعلَّمُ أن يقرأ</span>
+      </div>
+      <div class="half half--talk">
+        <span class="h-min">٣٠ دقيقة</span>
+        <span class="h-name">المُحادَثة</span>
+        <span class="h-sub">يتعلَّمُ أن يتكلَّم</span>
+      </div>
+    </div>
+
+    <div class="total">
+      <div class="big">١٦ ساعةً لكلِّ درجة</div>
+      <span class="eq">٨ ساعاتِ حركاتٍ &nbsp;+&nbsp; ٨ ساعاتِ محادثة</span>
+    </div>
+  </div>
+
+  <!-- ===== ٢ · المستويات ===== -->
+  <div>
+    <div class="st">دَرَجاتُ المستوى الخمس</div>
+
+    <table class="lv">
+      <thead>
+        <tr>
+          <th style="width:11%">الدرجة</th>
+          <th style="width:45%">الحَرَكات · ٣٠ دقيقة</th>
+          <th style="width:44%">المُحادَثة · ٣٠ دقيقة</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge" style="background:#0e8a9c">١</span></td>
+          <td class="hrk-c">الفَتْحَة والكَسْرَة<small>جَلَسَ · شَرِبَ</small></td>
+          <td class="talk-c">أُسَمِّي وأَطْلُب<small>هٰذَا… · أُرِيدُ…</small></td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#086974">٢</span></td>
+          <td class="hrk-c">الضَّمَّة والسُّكُون<small>كُتُبٌ · مَكْتَبٌ</small></td>
+          <td class="talk-c">أَصِفُ وأَدُلُّ على المكان<small>أَيْنَ…؟ · تَحْتَ…</small></td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#b8926a">٣</span></td>
+          <td class="hrk-c">المُدُود — ا و ي<small>بَابٌ · نُورٌ · فِيلٌ</small></td>
+          <td class="talk-c">أُخْبِرُ عمَّا أَفْعَل<small>أَنَا أَلْعَبُ · مَاذَا تَفْعَلُ؟</small></td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#f15a68">٤</span></td>
+          <td class="hrk-c">الشَّدَّة<small>الدُّبُّ · جَدَّةٌ</small></td>
+          <td class="talk-c">أُعَبِّرُ وأُعَلِّل<small>أَنَا جَائِعٌ · … لِأَنَّ…</small></td>
+        </tr>
+        <tr>
+          <td><span class="badge" style="background:#2b3044">٥</span></td>
+          <td class="hrk-c">التَّنْوِين — ً ٍ ٌ<small>حَلِيبًا · وَلَدٌ</small></td>
+          <td class="talk-c">أُحَاوِرُ وأُبْدِي رَأْيِي<small>أَظُنُّ أَنَّ… · لٰكِنَّ…</small></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ===== ٣ · القصص بعد الحركات ===== -->
+  <div>
+    <div class="st">ثمَّ تأتي القِصَص <span class="tail">— بعدَ إتقانِ الحركاتِ كاملةً</span></div>
+    <div class="stories">
+      <div class="lbl">
+        <h3>٤٠ قصةً في ٥ درجات</h3>
+        <div class="note">لا يبدأُ الطفلُ القصصَ إلا بعد أن يُتقِنَ الحركاتِ السبعَ كلَّها — فيقرأُ حينئذٍ بلا تعثُّر.</div>
+      </div>
+      <div class="arc">
+        <span class="a">جَاعَ الدُّبُّ.</span>
+        <span class="to">←</span>
+        <span class="a">ضَحِكُوا لٰكِنَّ المُعَلِّمَ ابْتَسَمَ.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ٤ · الحصيلة ===== -->
+  <div class="out">
+    <div class="out-grid">
+      <div class="oc"><div class="v">٧</div><span class="l">حركاتٍ يقرؤها<br>فيفكُّ أيَّ نصٍّ مشكول</span></div>
+      <div class="oc"><div class="v">٤٠</div><span class="l">قصةً بقيمةٍ<br>في كلِّ واحدةٍ منها</span></div>
+      <div class="oc"><div class="v">١٥٠</div><span class="l">كلمةً أساسيةً<br>أسماءً وأفعالًا وصفاتٍ</span></div>
+      <div class="oc"><div class="v">٨٠</div><span class="l">ساعةً إجماليةً<br>للدرجاتِ الخمس</span></div>
+    </div>
+  </div>
+
+</section>
+</div>
+</body>
+</html>

@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <title>محرك ألعاب أكاديمية ضاد - الشامل</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script type="importmap">
+      {"imports":{"react":"https://esm.sh/react@18.3.1","lucide-react":"https://esm.sh/lucide-react?external=react,react-dom","react-dom":"https://esm.sh/react-dom@18.3.1","react/jsx-runtime":"https://esm.sh/react@18.3.1/jsx-runtime","react-dom/client":"https://esm.sh/react-dom@18.3.1/client","tailwindcss/defaultTheme":"https://esm.sh/tailwindcss/defaultTheme","tailwindcss-animate":"https://esm.sh/tailwindcss-animate"}}
+    </script>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,container-queries"></script>
+    <style type="text/tailwindcss">
+      @layer base {
+        :root { --background: 0 0% 100%; --foreground: 222.2 47.4% 11.2%; --radius: 1.5rem; }
+      }
+    </style>
+    <script type="module">
+          import defaultTheme from "tailwindcss/defaultTheme"
+          import tailwindcssAnimate from "tailwindcss-animate"
+          tailwind.config = {
+            darkMode: ["class"],
+            content: ["app/**/*.{ts,tsx}", "components/**/*.{ts,tsx}"],
+            theme: {
+              extend: {
+                colors: {
+                  daad: { primary: '#6366f1', dark: '#4338ca', light: '#e0e7ff', accent: '#f59e0b' }
+                },
+                keyframes: {
+                    float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-8px)' } },
+                    pop: { '0%': { transform: 'scale(0.8)', opacity: 0 }, '100%': { transform: 'scale(1)', opacity: 1 } },
+                    shake: { '0%, 100%': { transform: 'translateX(0)' }, '25%': { transform: 'translateX(-5px)' }, '75%': { transform: 'translateX(5px)' } },
+                    dropIn: { '0%': { transform: 'translateY(-50px)', opacity: 0 }, '70%': { transform: 'translateY(5px)' }, '100%': { transform: 'translateY(0)', opacity: 1 } },
+                    bounceIn: { '0%': { transform: 'scale(0)' }, '50%': { transform: 'scale(1.1)' }, '100%': { transform: 'scale(1)' } }
+                },
+                animation: {
+                    'float': 'float 3s ease-in-out infinite',
+                    'pop': 'pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    'shake': 'shake 0.4s ease-in-out',
+                    'drop-in': 'dropIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                    'bounce-in': 'bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                }
+              },
+            },
+            plugins: [tailwindcssAnimate]
+          }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.27.0/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Changa:wght@400;500;600;700;800&family=Noto+Naskh+Arabic:wght@500;600;700;800&display=swap');
+        body { font-family: 'Changa', sans-serif; background-color: #f8fafc; overflow-x: hidden; touch-action: pan-y; }
+        .font-naskh { font-family: 'Noto Naskh Arabic', serif; line-height: 1.8; }
+        .bg-daad-city { background-color: #faf5ff; background-image: radial-gradient(#d8b4fe 1.5px, transparent 1.5px); background-size: 24px 24px; }
+        .bg-lego-pattern { background-image: radial-gradient(#cbd5e1 2px, transparent 2px); background-size: 30px 30px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c084fc; border-radius: 10px; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel" data-type="module">
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createRoot } from "react-dom/client";
+import { 
+  Star, Trophy, Clock, Play, RotateCcw, ChevronRight, Gamepad2, Lightbulb, 
+  Settings, Rocket, Crosshair, MoveUp, Repeat, SlidersHorizontal, UserCog, 
+  Check, Home, Smile, Baby, Layers, Footprints, Train, ScanLine, X, Hammer, ArrowDownToLine, DoorOpen, MousePointerClick
+} from 'lucide-react';
+
+// --- أيقونة النينجا ---
+const NinjaIcon = ({ className }) => (<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 2a5 5 0 0 0-5 5v2h10V7a5 5 0 0 0-5-5z" fill="#1e293b" stroke="#0f172a"/><rect x="7" y="9" width="10" height="4" fill="#fcd34d" stroke="#b45309"/><circle cx="9.5" cy="11" r="1" fill="#0f172a"/><circle cx="14.5" cy="11" r="1" fill="#0f172a"/><path d="M7 13v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-6z" fill="#1e293b" stroke="#0f172a"/><path d="M4 14l3-2" stroke="#0f172a" strokeWidth="2"/><path d="M20 14l-3-2" stroke="#0f172a" strokeWidth="2"/></svg>);
+
+// ==========================================
+// 1. قاعدة البيانات الشاملة 
+// ==========================================
+const WORD_BANK = {
+  fatha: { syllables: ["بَـ", "تَـ", "ثَـ", "جَـ"], easy: ["زَرَعَ", "حَصَدَ", "قَرَأَ", "رَسَمَ"], hard: ["شَكَرَتْ", "كَتَبْنَا", "رَفَعُوا"], sentences: ["زَرَعَ الْفَلَّاحُ الْأَرْضَ بِنَشَاطٍ", "قَرَأَ الْوَلَدُ الدَّرْسَ بِنَجَاحٍ"] },
+  kasra: { syllables: ["بِـ", "تِـ", "ثِـ", "جِـ"], easy: ["فَرِحَ", "شَرِبَ", "لَعِبَ", "رَبِحَ"], hard: ["فَرِحَتْ", "سَمِعْنَا", "شَرِبُوا"], sentences: ["شَرِبَ الطِّفْلُ الْحَلِيبَ الطَّازَجَ", "ضَحِكَ الْوَلَدُ مَعَ أَصْدِقَائِهِ"] },
+  damma: { syllables: ["بُـ", "تُـ", "ثُـ", "جُـ"], easy: ["عُمَرُ", "خُبِزَ", "رُسِمَ", "طُبِخَ"], hard: ["مُبَارَكُ", "مُرَتَّبُ", "أُسْتَاذُ"], sentences: ["خُبِزَ الْخُبْزُ اللَّذِيذُ فِي الصَّبَاحِ", "رُسِمَتِ اللَّوْحَةُ بِأَلْوَانٍ جَمِيلَةٍ"] },
+  sukun: { syllables: ["مَكْـ", "بَرْ", "أَقْـ", "نَمْـ"], easy: ["مَكْتَبُ", "مَلْعَبُ", "عُصْفُورُ", "مَسْجِدُ"], hard: ["الْمَدْرَسَةِ", "الْمُعَلِّمَةِ", "يَسْتَيْقِظُ"], sentences: ["نَذْهَبُ إِلَى الْمَدْرَسَةِ نَشِيطِينَ", "يَلْعَبُ الْأَوْلَادُ بِالْكُرَةِ فِي الْمَلْعَبِ"] },
+  mad: { syllables: ["بَا", "بُو", "بِي", "تَا"], easy: ["قَال", "نُور", "طِين", "عَالِي"], hard: ["صَادِقُ", "سَالِمُ", "رَامِي"], sentences: ["طَارَ الْعُصْفُورُ عَالِيًا فِي السَّمَاءِ", "قَالَ سَامِي الصِّدْقَ لِأَبِيهِ"] },
+  shadda: { syllables: ["بَّ", "تَّ", "ثَّ", "جَّ"], easy: ["رَتَّبَ", "عَلَّمَ", "سَلَّمَ", "قِصَّةٌ"], hard: ["مُعَلِّمُ", "رُمَّانٌ", "الرَّأْيَ"], sentences: ["رَتَّبَ سَالِمٌ سَرِيرَهُ فِي الصَّبَاحِ", "يُعَلِّمُ الْمُعَلِّمُ النَّاسَ الْخَيْرَ"] }
+};
+
+// حزمة درس تُمرَّر من «مدن ضاد» عبر الرابط: ?pack=...&diff=...&game=...
+const QP = new URLSearchParams(window.location.search);
+try {
+  const pk = QP.get('pack');
+  if (pk) {
+    const P = JSON.parse(pk);
+    const fill = (a, b) => (a && a.length ? a : b) || [];
+    WORD_BANK.lesson = { name: P.name || 'حروف الدرس', syllables: fill(P.syllables, P.easy), easy: fill(P.easy, P.syllables), hard: fill(P.hard, P.easy), sentences: P.sentences || [] };
+  }
+} catch (e) {}
+
+const stripDiacritics = (str) => str.replace(/[\u064B-\u065F\u0670\u0651]/g, '');
+
+const playSoundEffect = (type) => {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)(); const now = ctx.currentTime;
+        if (type === 'win') { [261.63, 329.63, 392.00, 523.25].forEach((freq, idx) => { const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now + idx * 0.1); gain.gain.setValueAtTime(0.1, now + idx * 0.1); gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.25); osc.connect(gain); gain.connect(ctx.destination); osc.start(now + idx * 0.1); osc.stop(now + idx * 0.1 + 0.3); }); } 
+        else if (type === 'fail') { const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(80, now + 0.2); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2); osc.connect(gain); gain.connect(ctx.destination); osc.start(now); osc.stop(now + 0.2); } 
+        else if (type === 'shoot') { const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'square'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(200, now + 0.1); gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1); osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(now + 0.1); } 
+        else if (type === 'jump') { const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(300, now); osc.frequency.linearRampToValueAtTime(600, now + 0.15); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.15); osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(now + 0.15); }
+        else if (type === 'build') { const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(400, now + 0.1); gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1); osc.connect(gain); gain.connect(ctx.destination); osc.start(now); osc.stop(now + 0.1); }
+        else if (type === 'click' || type === 'pop') { const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(type === 'pop' ? 600 : 450, now); gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.connect(gain); gain.connect(ctx.destination); osc.start(now); osc.stop(now + 0.1); }
+    } catch (e) {}
+};
+
+const ConfettiComponent = () => {
+    const [pieces, setPieces] = useState([]);
+    useEffect(() => { const colors = ['#f472b6', '#c084fc', '#2dd4bf', '#fbbf24', '#38bdf8', '#ef4444']; setPieces(Array.from({ length: 40 }).map((_, i) => ({ id: i, x: Math.random() * 100, delay: Math.random() * 2, duration: Math.random() * 2 + 2, color: colors[Math.floor(Math.random() * colors.length)], size: Math.random() * 10 + 6 }))); }, []);
+    return (<div className="absolute inset-0 overflow-hidden pointer-events-none z-50">{pieces.map(p => <div key={p.id} className="absolute rounded-sm animate-confetti-fall" style={{ left: `${p.x}%`, top: `-20px`, width: `${p.size}px`, height: `${p.size}px`, backgroundColor: p.color, animationDelay: `${p.delay}s`, animationDuration: `${p.duration}s` }} />)}</div>);
+};
+
+const DEFAULT_CONFIG = { skill: 'fatha', difficulty: 'easy', speed: 0.2, targetScore: 3 };
+if (WORD_BANK.lesson) { DEFAULT_CONFIG.skill = 'lesson'; DEFAULT_CONFIG.difficulty = QP.get('diff') || 'syllables'; }
+
+// ==========================================
+// محركات الألعاب (11 لعبة)
+// ==========================================
+
+const ConveyorGame = ({ config, onWin, onBack }) => {
+    const [gameState, setGameState] = useState('idle'); const [score, setScore] = useState(0); const [targetWord, setTargetWord] = useState(''); const [items, setItems] = useState([]);
+    const wordsList = WORD_BANK[config.skill][config.difficulty === 'sentences' ? 'hard' : config.difficulty];
+    const reqRef = useRef(); const itemsRef = useRef([]); const scoreRef = useRef(0); const lastSpawn = useRef(0);
+    const targetRef = useRef(''); const wordsRef = useRef(wordsList);
+    useEffect(() => { wordsRef.current = wordsList; }, [wordsList]);
+    const startGame = () => { setGameState('playing'); setScore(0); scoreRef.current = 0; itemsRef.current = []; setItems([]); const t = wordsList[Math.floor(Math.random() * wordsList.length)]; setTargetWord(t); targetRef.current = t; };
+    const update = useCallback(() => {
+        if (gameState !== 'playing') return; const now = Date.now(); const moveSpeed = config.speed + 0.2; const spawnDelay = 2500 - (config.speed * 2000);
+        if (now - lastSpawn.current > Math.max(800, spawnDelay)) {
+            const isTarget = Math.random() > 0.4; let text = targetRef.current;
+            if (!isTarget) { const distractors = wordsRef.current.filter(w=>w!==targetRef.current); text = distractors.length>0 ? distractors[Math.floor(Math.random() * distractors.length)] : wordsRef.current[0]; }
+            itemsRef.current.push({ id: Math.random(), text, isTarget, right: -20 }); lastSpawn.current = now;
+        }
+        itemsRef.current = itemsRef.current.map(item => { item.right += moveSpeed; return item; }).filter(item => item.right < 120);
+        setItems([...itemsRef.current]); reqRef.current = requestAnimationFrame(update);
+    }, [gameState, config.speed]);
+    useEffect(() => { if (gameState === 'playing') reqRef.current = requestAnimationFrame(update); return () => cancelAnimationFrame(reqRef.current); }, [gameState, update]);
+    const handleStamp = () => {
+        if (gameState !== 'playing') return; const inScanner = itemsRef.current.find(item => item.right > 40 && item.right < 60);
+        if (inScanner) {
+            if (inScanner.isTarget) { playSoundEffect('win'); itemsRef.current = itemsRef.current.filter(i => i.id !== inScanner.id); scoreRef.current += 1; setScore(scoreRef.current); const t = wordsRef.current[Math.floor(Math.random() * wordsRef.current.length)]; setTargetWord(t); targetRef.current = t; if (scoreRef.current >= config.targetScore) { setGameState('won'); onWin(config.targetScore); } } 
+            else { playSoundEffect('fail'); scoreRef.current = Math.max(0, scoreRef.current - 1); setScore(scoreRef.current); itemsRef.current = itemsRef.current.filter(i => i.id !== inScanner.id); }
+        } else { playSoundEffect('fail'); }
+    };
+    return (
+        <div className="h-full flex flex-col bg-slate-100 rounded-[2rem] border-4 border-slate-300 overflow-hidden relative shadow-inner"><div className="p-3 bg-slate-800 text-white flex justify-between z-20 font-changa shadow-md"><button onClick={onBack} className="p-1 hover:bg-slate-700 rounded-xl"><ChevronRight size={24}/></button><div className="font-bold text-center"><span className="text-xs text-slate-400 block">افحص الكلمة:</span><span className="text-2xl text-emerald-400 font-naskh font-black">{targetWord}</span></div><div className="font-bold text-emerald-400 bg-slate-900 px-4 py-2 rounded-full">{score} / {config.targetScore}</div></div><div className="flex-1 relative flex flex-col justify-center">{gameState === 'idle' && (<div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-30 font-changa"><ScanLine className="w-20 h-20 text-slate-700 mb-4" /><h3 className="text-3xl font-black text-slate-800 mb-2">حزام المصنع</h3><button onClick={startGame} className="mt-4 bg-emerald-500 text-white px-8 py-3 rounded-full font-bold text-xl hover:bg-emerald-600 shadow-lg">تشغيل الحزام</button></div>)}{gameState === 'won' && (<div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-md z-30 font-changa"><Trophy className="w-24 h-24 text-yellow-500 mb-4 animate-pop" /><h3 className="text-4xl font-black text-slate-800 mb-6">فحص ممتاز!</h3><button onClick={startGame} className="bg-emerald-500 text-white px-8 py-3 rounded-full font-bold text-xl shadow-lg">العب مجدداً</button></div>)}<div className="w-full h-32 bg-slate-700 relative overflow-hidden flex items-center shadow-inner border-y-8 border-slate-800"><div className="absolute inset-0 opacity-20" style={{backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 40px, #000 40px, #000 80px)'}}></div><div className="absolute top-0 bottom-0 border-x-4 border-dashed border-emerald-400 bg-emerald-400/20 z-10" style={{ right: '40%', width: '20%' }}></div>{items.map(item => (<div key={item.id} className="absolute bg-amber-100 border-4 border-amber-300 px-6 py-3 rounded-xl font-naskh font-black text-3xl shadow-lg whitespace-nowrap z-0 text-amber-900" style={{ right: `${item.right}%`, transform: 'translateX(50%)' }}>{item.text}</div>))}</div>{gameState === 'playing' && (<div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20"><button onClick={handleStamp} className="w-32 h-32 bg-red-500 rounded-full border-8 border-red-700 shadow-[0_10px_0_#991b1b] active:shadow-none active:translate-y-2 flex items-center justify-center text-white font-black text-xl transition-all">افحص!</button></div>)}</div></div>
+    );
+};
+
+const CardSortGame = ({ config, onWin, onBack }) => {
+    const [gameState, setGameState] = useState('idle'); const [score, setScore] = useState(0); const [targetWord, setTargetWord] = useState(''); const [currentCard, setCurrentCard] = useState(null); const [animationClass, setAnimationClass] = useState('');
+    const wordsList = WORD_BANK[config.skill][config.difficulty === 'sentences' ? 'hard' : config.difficulty];
+    const generateCard = (target) => { const isTarget = Math.random() > 0.5; let text = target; if (!isTarget) { const distractors = wordsList.filter(w=>w!==target); text = distractors.length>0 ? distractors[Math.floor(Math.random() * distractors.length)] : wordsList[0]; } setCurrentCard({ text, isTarget }); setAnimationClass('animate-in zoom-in duration-300'); setTimeout(() => setAnimationClass(''), 300); };
+    const startGame = () => { setGameState('playing'); setScore(0); const newTarget = wordsList[Math.floor(Math.random() * wordsList.length)]; setTargetWord(newTarget); generateCard(newTarget); };
+    const handleChoice = (choseYes) => { if (gameState !== 'playing' || !currentCard) return; const isCorrectChoice = (choseYes && currentCard.isTarget) || (!choseYes && !currentCard.isTarget); if (isCorrectChoice) { playSoundEffect('shoot'); const newScore = score + 1; setScore(newScore); if (newScore >= config.targetScore) { playSoundEffect('win'); setGameState('won'); onWin(config.targetScore); } else { generateCard(targetWord); } } else { playSoundEffect('fail'); setAnimationClass('animate-shake text-rose-500'); setScore(Math.max(0, score - 1)); setTimeout(() => setAnimationClass(''), 400); } };
+    return (
+        <div className="h-full flex flex-col bg-purple-50 rounded-[2rem] border-4 border-purple-300 overflow-hidden relative shadow-inner"><div className="p-3 bg-purple-900 text-white flex justify-between z-10 font-changa shadow-md"><button onClick={onBack} className="p-1 hover:bg-purple-800 rounded-xl"><ChevronRight size={24}/></button><div className="font-bold text-center"><span className="text-xs text-purple-300 block">نبحث عن:</span><span className="text-2xl text-yellow-300 font-naskh font-black">{targetWord}</span></div><div className="font-bold text-yellow-300 bg-purple-950 px-4 py-2 rounded-full">{score} / {config.targetScore}</div></div><div className="flex-1 relative flex flex-col justify-center items-center p-6">{gameState === 'idle' && (<div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-30 font-changa"><Layers className="w-20 h-20 text-purple-600 mb-4" /><h3 className="text-3xl font-black text-purple-900 mb-2">الفرز السريع</h3><button onClick={startGame} className="mt-6 bg-purple-600 text-white px-8 py-3 rounded-full font-bold text-xl hover:bg-purple-700 shadow-lg">ابدأ الفرز</button></div>)}{gameState === 'won' && (<div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-md z-30 font-changa"><Trophy className="w-24 h-24 text-yellow-500 mb-4 animate-pop" /><h3 className="text-4xl font-black text-purple-900 mb-6">سرعة بديهة رائعة!</h3><button onClick={startGame} className="bg-purple-600 text-white px-8 py-3 rounded-full font-bold text-xl shadow-lg">العب مجدداً</button></div>)}{gameState === 'playing' && currentCard && (<div className="flex flex-col items-center w-full max-w-sm"><div className={`w-full aspect-[4/3] bg-white rounded-3xl border-4 border-purple-200 shadow-xl flex items-center justify-center mb-8 ${animationClass}`}><span className="font-naskh font-black text-5xl md:text-6xl text-slate-800 text-center px-4 leading-tight">{currentCard.text}</span></div><div className="flex justify-center gap-6 w-full"><button onClick={() => handleChoice(false)} className="flex-1 py-5 bg-rose-500 text-white rounded-2xl font-black shadow-[0_6px_0_#991b1b] active:translate-y-1 active:shadow-none flex justify-center items-center hover:bg-rose-600 transition-all"><X strokeWidth={4} size={32} /></button><button onClick={() => handleChoice(true)} className="flex-1 py-5 bg-emerald-500 text-white rounded-2xl font-black shadow-[0_6px_0_#065f46] active:translate-y-1 active:shadow-none flex justify-center items-center hover:bg-emerald-600 transition-all"><Check strokeWidth={4} size={32} /></button></div></div>)}</div></div>
+    );
+};
+
+const WhackAMoleGame = ({ config, onWin, onBack }) => {
+    const [gameState, setGameState] = useState('idle'); const [score, setScore] = useState(0); const [targetWord, setTargetWord] = useState(''); const [holes, setHoles] = useState(Array(6).fill(null));
+    const wordsList = WORD_BANK[config.skill][config.difficulty === 'sentences' ? 'hard' : config.difficulty]; const scoreRef = useRef(0); const activeTimeouts = useRef([]);
+    const targetRef = useRef(''); const wordsRef = useRef(wordsList);
+    useEffect(() => { wordsRef.current = wordsList; }, [wordsList]);
+    const startGame = () => { setGameState('playing'); setScore(0); scoreRef.current = 0; const t = wordsList[Math.floor(Math.random() * wordsList.length)]; setTargetWord(t); targetRef.current = t; spawnMole(); };
+    const clearAllTimeouts = () => { activeTimeouts.current.forEach(clearTimeout); activeTimeouts.current = []; };
+    const spawnMole = () => {
+        if (scoreRef.current >= config.targetScore) return;
+        setHoles(prev => {
+            const newHoles = [...prev]; const emptyIndices = newHoles.map((v, i) => v === null ? i : -1).filter(i => i !== -1);
+            if (emptyIndices.length === 0) return newHoles;
+            const randomIdx = emptyIndices[Math.floor(Math.random() * emptyIndices.length)]; const isTarget = Math.random() > 0.4;
+            let text = targetRef.current; if (!isTarget) { const dists = wordsRef.current.filter(w=>w!==targetRef.current); text = dists.length>0 ? dists[Math.floor(Math.random()*dists.length)] : wordsRef.current[0]; }
+            newHoles[randomIdx] = { id: Math.random(), text, isTarget };
+            const hideDelay = 3000 - (config.speed * 2500);
+            const t = setTimeout(() => { setHoles(curr => { const next = [...curr]; if (next[randomIdx]?.id === newHoles[randomIdx].id) next[randomIdx] = null; return next; }); }, Math.max(800, hideDelay));
+            activeTimeouts.current.push(t); return newHoles;
+        });
+        const spawnDelay = 2000 - (config.speed * 1500); const t2 = setTimeout(spawnMole, Math.max(600, spawnDelay)); activeTimeouts.current.push(t2);
+    };
+    useEffect(() => { if (gameState !== 'playing') clearAllTimeouts(); return clearAllTimeouts; }, [gameState]);
+    const handleTap = (idx, mole) => {
+        if (gameState !== 'playing' || !mole) return;
+        if (mole.isTarget) { playSoundEffect('win'); scoreRef.current += 1; setScore(scoreRef.current); setHoles(prev => { const n = [...prev]; n[idx] = null; return n; }); if (scoreRef.current >= config.targetScore) { setGameState('won'); onWin(config.targetScore); } else { const nt = wordsRef.current[Math.floor(Math.random() * wordsRef.current.length)]; setTargetWord(nt); targetRef.current = nt; } }
+        else { playSoundEffect('fail'); scoreRef.current = Math.max(0, scoreRef.current - 1); setScore(scoreRef.current); setHoles(prev => { const n = [...prev]; n[idx] = null; return n; }); }
+    };
+    return (
+        <div className="h-full flex flex-col bg-amber-50 rounded-[2rem] border-4 border-amber-300 overflow-hidden relative shadow-inner"><div className="p-3 bg-amber-800 text-white flex justify-between z-10 font-changa shadow-md"><button onClick={onBack} className="p-1 hover:bg-amber-700 rounded-xl"><ChevronRight size={24}/></button><div className="font-bold text-center"><span className="text-xs text-amber-300 block">اصطد:</span><span className="text-2xl text-white font-naskh font-black">{targetWord}</span></div><div className="font-bold text-amber-200 bg-amber-950 px-4 py-2 rounded-full">{score} / {config.targetScore}</div></div><div className="flex-1 relative flex flex-col justify-center items-center p-4">{gameState === 'idle' && (<div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-30 font-changa"><MousePointerClick className="w-20 h-20 text-amber-600 mb-4 animate-bounce" /><h3 className="text-3xl font-black text-amber-900 mb-2">صيد الكلمات</h3><button onClick={startGame} className="mt-6 bg-amber-500 text-white px-8 py-3 rounded-full font-bold text-xl hover:bg-amber-600 shadow-lg">ابدأ الصيد</button></div>)}{gameState === 'won' && (<div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 backdrop-blur-md z-30 font-changa"><Trophy className="w-24 h-24 text-yellow-500 mb-4 animate-pop" /><h3 className="text-4xl font-black text-amber-900 mb-6">صياد ماهر!</h3><button onClick={startGame} className="bg-amber-500 text-white px-8 py-3 rounded-full font-bold text-xl shadow-lg">العب مجدداً</button></div>)}<div className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full max-w-lg">{holes.map((mole, idx) => (<div key={idx} className="relative aspect-[4/3] bg-amber-200 rounded-3xl border-b-8 border-amber-400 overflow-hidden flex items-end justify-center cursor-pointer" onClick={() => handleTap(idx, mole)}><div className="absolute bottom-0 w-3/4 h-1/3 bg-amber-900 rounded-t-[50%]"></div>{mole && (<div className="absolute bottom-2 w-11/12 bg-white rounded-xl border-4 border-amber-500 py-3 flex items-center justify-center shadow-lg animate-in slide-in-from-bottom-10 fade-in duration-200"><span className="font-naskh font-black text-2xl md:text-3xl text-slate-800 leading-none">{mole.text}</span></div>)}</div>))}</div></div></div>
+    );
+};
+
+const ClawMachineGame = ({ config, onWin, onBack }) => {
+    const [gameState, setGameState] = useState('idle'); const [score, setScore] = useState(0); const [targetWord, setTargetWord] = useState(''); const [clawX, setClawX] = useState(50); const [isDropping, setIsDropping] = useState(false); const [wordsListBelow, setWordsListBelow] = useState([]);
+    const wordsList = WORD_BANK[config.skill][config.difficulty === 'sentences' ? 'hard' : config.difficulty];
+    const reqRef = useRef(); const clawState = useRef({ x: 50, speed: config.speed + 0.3, dir: 1 }); 
+    const generateWords = (target) => { const list = []; for(let i=0; i<4; i++) { const dists = wordsList.filter(w=>w!==target); list.push({ id: i, text: dists[Math.floor(Math.random()*dists.length)], isTarget: false, x: 15 + (i * 23) }); } const targetIdx = Math.floor(Math.random() * 4); list[targetIdx] = { ...list[targetIdx], text: target, isTarget: true }; setWordsListBelow(list); };
+    const startGame = () => { setGameState('playing'); setScore(0); setIsDropping(false); const newTarget = wordsList[Math.floor(Math.random() * wordsList.length)]; setTargetWord(newTarget); generateWords(newTarget); };
+    const update = useCallback(() => { if (gameState !== 'playing' || isDropping) return; let newX = clawState.current.x + (clawState.current.speed * clawState.current.dir); if (newX > 90) { newX = 90; clawState.current.dir = -1; } if (newX < 10) { newX = 10; clawState.current.dir = 1; } clawState.current.x = newX; setClawX(newX); reqRef.current = requestAnimationFrame(update); }, [gameState, isDropping, config.speed]);
+    useEffect(() => { if (gameState === 'playing' && !isDropping) reqRef.current = requestAnimationFrame(update); return () => cancelAnimationFrame(reqRef.current); }, [gameState, isDropping, update]);
+    const handleDrop = () => { if (gameState !== 'playing' || isDropping) return; setIsDropping(true); playSoundEffect('shoot'); let closest = null; let minDiff = 100; wordsListBelow.forEach(w => { const diff = Math.abs(w.x - clawState.current.x); if (diff < minDiff) { minDiff = diff; closest = w; } }); setTimeout(() => { if (minDiff < 10 && closest) { if (closest.isTarget) { playSoundEffect('win'); const newScore = score + 1; setScore(newScore); if (newScore >= config.targetScore) { setGameState('won'); onWin(config.targetScore); } else { const newT = wordsList[Math.floor(Math.random() * wordsList.length)]; setTargetWord(newT); generateWords(newT); } } else { playSoundEffect('fail'); setScore(Math.max(0, score - 1)); } } else { playSoundEffect('fail'); } setIsDropping(false); }, 800); };
+    return (
+        <div className="h-full flex flex-col bg-slate-900 rounded-[2rem] border-4 border-yellow-400 overflow-hidden relative shadow-inner"><div className="p-3 bg-slate-950 text-white flex justify-between z-10 font-changa shadow-md"><button onClick={onBack} className="p-1 hover:bg-slate-800 rounded-xl"><ChevronRight size={24}/></button><div className="font-bold text-center"><span className="text-xs text-slate-400 block">التقط:</span><span className="text-2xl text-yellow-400 font-naskh font-black">{targetWord}</span></div><div className="font-bold text-yellow-400 bg-slate-900 px-4 py-2 rounded-full border border-yellow-400/30">{score} / {config.targetScore}</div></div><div className="flex-1 relative flex flex-col justify-end p-4 bg-gradient-to-b from-slate-800 to-slate-900 overflow-hidden cursor-pointer" onPointerDown={handleDrop}>{gameState === 'idle' && (<div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-30 font-changa text-white"><ArrowDownToLine className="w-20 h-20 text-yellow-400 mb-4 animate-bounce" /><h3 className="text-3xl font-black mb-2">رافعة الأبطال</h3><button onClick={startGame} className="mt-6 bg-yellow-500 text-slate-900 px-8 py-3 rounded-full font-black text-xl hover:bg-yellow-400 shadow-lg">شغّل الرافعة</button></div>)}{gameState === 'won' && (<div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md z-30 font-changa text-white"><Trophy className="w-24 h-24 text-yellow-400 mb-4 animate-pop" /><h3 className="text-4xl font-black mb-6">التقاط مثالي!</h3><button onClick={startGame} className="bg-yellow-500 text-slate-900 px-8 py-3 rounded-full font-black text-xl shadow-lg">العب مجدداً</button></div>)}{gameState === 'playing' && (<div className="absolute top-0 z-20 transition-all" style={{ left: `${clawX}%`, top: isDropping ? '60%' : '0', transform: 'translateX(-50%)', transitionDuration: isDropping ? '800ms' : '0ms', transitionTimingFunction: isDropping ? 'ease-in-out' : 'linear' }}><div className="w-2 h-40 bg-slate-600 mx-auto -mt-32"></div><div className="w-16 h-12 border-x-4 border-b-4 border-yellow-400 rounded-b-2xl shadow-[0_0_10px_rgba(250,204,21,0.5)]"></div></div>)}<div className="w-full flex justify-between px-4 pb-4 z-10 border-b-8 border-slate-700">{wordsListBelow.map(w => (<div key={w.id} className="bg-slate-700 border-2 border-slate-500 text-white font-naskh font-black text-2xl md:text-3xl px-4 py-3 rounded-xl shadow-lg w-1/5 text-center flex items-center justify-center truncate">{w.text}</div>))}</div></div></div>
+    );
+};
+
+const MazeDoorsGame = ({ config, onWin, onBack }) => {
+    const [gameState, setGameState] = useState('idle'); const [score, setScore] = useState(0); const [targetWord, setTargetWord] = useState(''); const [doors, setDoors] = useState([]); const [timeLeft, setTimeLeft] = useState(100);
+    const wordsList = WORD_BANK[config.skill][config.difficulty === 'sentences' ? 'hard' : config.difficulty]; const reqRef = useRef(); const lastTick = useRef(Date.now());
+    const generateDoors = (target) => { const list = []; for(let i=0; i<3; i++) { const dists = wordsList.filter(w=>w!==target); list.push({ id: i, text: dists[Math.floor(Math.random()*dists.length)], isTarget: false }); } const targetIdx = Math.floor(Math.random() * 3); list[targetIdx] = { ...list[targetIdx], text: target, isTarget: true }; setDoors(list); };
+    const startGame = () => { setGameState('playing'); setScore(0); setTimeLeft(100); const newTarget = wordsList[Math.floor(Math.random() * wordsList.length)]; setTargetWord(newTarget); generateDoors(newTarget); lastTick.current = Date.now(); };
+    const update = useCallback(() => { if (gameState !== 'playing') return; const now = Date.now(); const delta = now - lastTick.current; const dropRate = (config.speed * 20) * (delta / 1000); let outOfTime = false; setTimeLeft(t => { const next = t - dropRate; if (next <= 0) { outOfTime = true; return 0; } return next; }); lastTick.current = now; if (outOfTime) { setGameState('over'); playSoundEffect('fail'); return; } reqRef.current = requestAnimationFrame(update); }, [gameState, config.speed]);
+    useEffect(() => { if (gameState === 'playing') reqRef.current = requestAnimationFrame(update); return () => cancelAnimationFrame(reqRef.current); }, [gameState, update]);
+    const handleDoorClick = (isTarget) => { if (gameState !== 'playing') return; if (isTarget) { playSoundEffect('win'); const newScore = score + 1; setScore(newScore); if (newScore >= config.targetScore) { setGameState('won'); onWin(config.targetScore); } else { setTimeLeft(100); const newT = wordsList[Math.floor(Math.random() * wordsList.length)]; setTargetWord(newT); generateDoors(newT); } } else { playSoundEffect('fail'); setScore(Math.max(0, score - 1)); setTimeLeft(t => Math.max(0, t - 20)); } };
+    return (
+        <div className="h-full flex flex-col bg-emerald-900 rounded-[2rem] border-4 border-emerald-500 overflow-hidden relative shadow-inner"><div className="p-3 bg-emerald-950 text-white flex justify-between z-10 font-changa shadow-md"><button onClick={onBack} className="p-1 hover:bg-emerald-800 rounded-xl"><ChevronRight size={24}/></button><div className="font-bold text-center"><span className="text-xs text-emerald-300 block">اعبر من بوابة:</span><span className="text-2xl text-white font-naskh font-black">{targetWord}</span></div><div className="font-bold text-yellow-400 bg-emerald-900 px-4 py-2 rounded-full border border-emerald-700">{score} / {config.targetScore}</div></div>{gameState === 'playing' && (<div className="h-2 bg-emerald-950 w-full"><div className={`h-full ${timeLeft > 50 ? 'bg-emerald-400' : timeLeft > 20 ? 'bg-amber-400' : 'bg-rose-500'}`} style={{width: `${timeLeft}%`}}></div></div>)}<div className="flex-1 relative flex flex-col p-6 items-center justify-center">{gameState === 'idle' && (<div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm z-30 font-changa text-white"><DoorOpen className="w-24 h-24 text-emerald-400 mb-4" /><h3 className="text-3xl font-black mb-6">بوابات العبور</h3><button onClick={startGame} className="bg-emerald-500 text-slate-900 px-8 py-3 rounded-full font-black text-xl hover:bg-emerald-400 shadow-lg">ابدأ الركض</button></div>)}{(gameState === 'won' || gameState === 'over') && (<div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md z-30 font-changa text-white"><Trophy className={`w-24 h-24 mb-4 ${gameState === 'won' ? 'text-yellow-400 animate-pop' : 'text-slate-500'}`} /><h3 className="text-4xl font-black mb-6">{gameState === 'won' ? 'نجوت بسلام!' : 'أُغلقت الأبواب'}</h3><button onClick={startGame} className="bg-emerald-500 text-slate-900 px-8 py-3 rounded-full font-black text-xl shadow-lg">العب مجدداً</button></div>)}{gameState === 'playing' && (<div className="flex gap-4 w-full h-full max-h-[300px]">{doors.map(d => (<div key={d.id} onClick={() => handleDoorClick(d.isTarget)} className="flex-1 bg-slate-800 rounded-t-full border-4 border-slate-600 hover:border-emerald-400 hover:bg-slate-700 cursor-pointer transition-all flex items-center justify-center shadow-2xl relative overflow-hidden group"><div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-900 opacity-50 group-hover:opacity-0 transition-opacity"></div><span className="font-naskh font-black text-4xl md:text-5xl text-white drop-shadow-md z-10 text-center px-2">{d.text}</span></div>))}</div>)}</div></div>
+    );
+};
+
+const SpaceshipSteeringGame = ({ config, onWin, onBack }) => {
+    const [gameState, setGameState] = useState('idle'); const [score, setScore] = useState(0); const [targetWord, setTargetWord] = useState(''); const [playerX, setPlayerX] = useState(50); const [items, setItems] = useState([]);
+    const wordsList = WORD_BANK[config.skill][config.difficulty === 'sentences' ? 'hard' : config.difficulty];
+    const containerRef = useRef(null); const reqRef = useRef(); const itemsRef = useRef([]); const scoreRef = useRef(0); const lastSpawn = useRef(Date.now());
+    const playerXRef = useRef(50); const targetRef = useRef(''); const wordsRef = useRef(wordsList);
+    useEffect(() => { wordsRef.current = wordsList; }, [wordsList]);
+    const startGame = () => { setGameState('playing'); setScore(0); scoreRef.current = 0; itemsRef.current = []; setItems([]); const t = wordsList[Math.floor(Math.random() * wordsList.length)]; setTargetWord(t); targetRef.current = t; };
+    const handlePointerMove = (e) => { if (gameState !== 'playing' || !containerRef.current) return; const rect = containerRef.current.getBoundingClientRect(); const newX = Math.max(5, Math.min(95, (((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) / rect.width) * 100)); playerXRef.current = newX; setPlayerX(newX); };
+    const update = useCallback(() => {
+        if (gameState !== 'playing') return; const now = Date.now(); const spawnDelay = 2000 - (config.speed * 2000);
+        if (now - lastSpawn.current > Math.max(500, spawnDelay)) {
+            const isTarget = Math.random() > 0.4; let text = targetRef.current; if (!isTarget) { const dists = wordsRef.current.filter(w=>w!==targetRef.current); text = dists.length>0 ? dists[Math.floor(Math.random()*dists.length)] : wordsRef.current[0]; }
+            itemsRef.current.push({ id: Math.random(), text, isTarget, x: Math.random() * 80 + 10, y: -10, speed: config.speed + Math.random() * 0.1 }); lastSpawn.current = now;
+        }
+        itemsRef.current = itemsRef.current.map(item => {
+            item.y += item.speed;
+            if (item.y > 80 && item.y < 95 && Math.abs(item.x - playerXRef.current) < 15) {
+                if (item.isTarget) { playSoundEffect('win'); scoreRef.current += 1; setScore(scoreRef.current); const t = wordsRef.current[Math.floor(Math.random() * wordsRef.current.length)]; setTargetWord(t); targetRef.current = t; if (scoreRef.current >= config.targetScore) { setGameState('won'); onWin(config.targetScore); } }
+                else { playSoundEffect('fail'); scoreRef.current = Math.max(0, scoreRef.current - 1); setScore(scoreRef.current); } return null;
+            } return item;
+        }).filter(item => item !== null && item.y < 100);
+        setItems([...itemsRef.current]); reqRef.current = requestAnimationFrame(update);
+    }, [gameState, config.speed, config.targetScore, onWin]);
+    useEffect(() => { if (gameState === 'playing') reqRef.current = requestAnimationFrame(update); return () => cancelAnimationFrame(reqRef.current); }, [gameState, update]);
+    return (
+        <div className="h-full flex flex-col bg-slate-900 rounded-[2rem] border-4 border-indigo-500 overflow-hidden relative shadow-lg"><div className="p-3 bg-slate-950 text-white flex justify-between z-10 font-changa border-b border-indigo-900"><button onClick={onBack} className="p-1 hover:bg-slate-800 rounded-xl"><ChevronRight size={24} className="text-slate-400"/></button><div className="font-bold text-cyan-400 text-lg flex flex-col items-center"><span className="text-xs text-slate-400">التقط:</span><span className="text-3xl md:text-4xl font-black font-naskh text-white">{targetWord}</span></div><div className="font-bold text-yellow-400 bg-slate-800 px-4 py-2 rounded-full border border-slate-700">{score} / {config.targetScore}</div></div><div ref={containerRef} className="flex-1 relative overflow-hidden bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] cursor-none touch-none" onMouseMove={handlePointerMove} onTouchMove={handlePointerMove}>{gameState === 'idle' && <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm z-20 font-changa text-white"><Rocket className="w-20 h-20 text-cyan-400 mb-4 animate-float" /><h3 className="text-3xl font-black mb-6">مكوك الفضاء</h3><button onClick={startGame} className="bg-cyan-500 text-slate-900 px-8 py-3 rounded-full font-bold text-xl hover:bg-cyan-400 shadow-lg">ابدأ القيادة</button></div>}{gameState === 'won' && <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md z-20 font-changa text-white"><Trophy className="w-24 h-24 text-yellow-400 mb-4 animate-pop" /><h3 className="text-4xl font-black mb-6">قيادة ممتازة!</h3><button onClick={startGame} className="bg-cyan-500 text-slate-900 px-8 py-3 rounded-full font-bold text-xl">العب مجدداً</button></div>}{items.map(item => <div key={item.id} className={`absolute font-naskh font-black text-3xl md:text-4xl px-5 py-2 rounded-full shadow-lg border-2 ${item.isTarget ? 'bg-cyan-900 text-cyan-100 border-cyan-500' : 'bg-slate-800 text-white border-slate-600'}`} style={{ left: `${item.x}%`, top: `${item.y}%`, transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>{item.text}</div>)}{gameState === 'playing' && <div className="absolute bottom-4 w-20 h-20 flex items-center justify-center" style={{ left: `${playerX}%`, transform: 'translateX(-50%)' }}><div className="w-16 h-16 bg-cyan-500 rounded-b-full rounded-t-lg border-4 border-white"><Rocket className="text-white w-8 h-8 m-auto mt-2" /></div></div>}</div></div>
+    );
+};
+
+const LaserCannonGame = ({ config, onWin, onBack }) => {
+    const [gameState, setGameState] = useState('idle'); const [score, setScore] = useState(0); const [targetWord, setTargetWord] = useState(''); const [targets, setTargets] = useState([]); const [lasers, setLasers] = useState([]);
+    const wordsList = WORD_BANK[config.skill][config.difficulty === 'sentences' ? 'hard' : config.difficulty];
+    const containerRef = useRef(null); const reqRef = useRef(); const targetsRef = useRef([]); const lasersRef = useRef([]); const scoreRef = useRef(0); const lastSpawn = useRef(0);
+    const targetRef = useRef(''); const wordsRef = useRef(wordsList);
+    useEffect(() => { wordsRef.current = wordsList; }, [wordsList]);
+    const startGame = () => { setGameState('playing'); setScore(0); scoreRef.current = 0; setTargets([]); targetsRef.current = []; setLasers([]); lasersRef.current = []; const t = wordsList[Math.floor(Math.random() * wordsList.length)]; setTargetWord(t); targetRef.current = t; };
+    const handleShoot = (e) => {
+        if (gameState !== 'playing' || !containerRef.current) return; playSoundEffect('shoot');
+        const rect = containerRef.current.getBoundingClientRect(); const targetX = (((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) / rect.width) * 100; const targetY = (((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) / rect.height) * 100;
+        const angle = Math.atan2(targetY - 100, targetX - 50); lasersRef.current.push({ id: Math.random(), x: 50, y: 90, vx: Math.cos(angle) * 3, vy: Math.sin(angle) * 3 });
+    };
+    const update = useCallback(() => {
+        if (gameState !== 'playing') return; const now = Date.now(); const spawnDelay = 2500 - (config.speed * 2000); 
+        if (now - lastSpawn.current > Math.max(600, spawnDelay)) {
+            const isTarget = Math.random() > 0.4; const fromLeft = Math.random() > 0.5; let text = targetRef.current; if (!isTarget) { const dists = wordsRef.current.filter(w=>w!==targetRef.current); text = dists.length>0 ? dists[Math.floor(Math.random()*dists.length)] : wordsRef.current[0]; }
+            targetsRef.current.push({ id: Math.random(), text, isTarget, x: fromLeft ? -20 : 120, y: Math.random() * 40 + 10, speed: fromLeft ? config.speed : -config.speed }); lastSpawn.current = now;
+        }
+        lasersRef.current = lasersRef.current.map(l => { l.x += l.vx; l.y += l.vy; return l; }).filter(l => l.x > 0 && l.x < 100 && l.y > 0 && l.y < 100);
+        targetsRef.current = targetsRef.current.map(t => {
+            t.x += t.speed; const hitLaserIdx = lasersRef.current.findIndex(l => Math.abs(l.x - t.x) < 8 && Math.abs(l.y - t.y) < 8);
+            if (hitLaserIdx !== -1) { lasersRef.current.splice(hitLaserIdx, 1); if (t.isTarget) { playSoundEffect('win'); scoreRef.current += 1; setScore(scoreRef.current); const nt = wordsRef.current[Math.floor(Math.random() * wordsRef.current.length)]; setTargetWord(nt); targetRef.current = nt; if (scoreRef.current >= config.targetScore) { setGameState('won'); onWin(config.targetScore); } } else { playSoundEffect('fail'); scoreRef.current = Math.max(0, scoreRef.current - 1); setScore(scoreRef.current); } return null; } return t;
+        }).filter(t => t !== null && t.x > -30 && t.x < 130);
+        setTargets([...targetsRef.current]); setLasers([...lasersRef.current]); reqRef.current = requestAnimationFrame(update);
+    }, [gameState, config.speed, config.targetScore, onWin]);
+    useEffect(() => { if (gameState === 'playing') reqRef.current = requestAnimationFrame(update); return () => cancelAnimationFrame(reqRef.current); }, [gameState, update]);
+    return (
+        <div className="h-full flex flex-col bg-slate-900 rounded-[2rem] border-4 border-rose-500 overflow-hidden relative shadow-lg"><div className="p-3 bg-slate-950 text-white flex justify-between z-10 font-changa"><button onClick={onBack} className="p-1 hover:bg-slate-800 rounded-xl"><ChevronRight size={24}/></button><div className="font-bold text-rose-400 text-lg flex flex-col items-center"><span className="text-xs text-slate-400">صوّب نحو:</span><span className="text-3xl md:text-4xl font-black font-naskh text-white">{targetWord}</span></div><div className="font-bold text-yellow-400 bg-slate-800 px-4 py-2 rounded-full">{score} / {config.targetScore}</div></div><div ref={containerRef} className="flex-1 relative overflow-hidden bg-gradient-to-t from-slate-900 to-slate-800 cursor-crosshair touch-none" onPointerDown={handleShoot}>{gameState === 'idle' && <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm z-20 font-changa text-white"><Crosshair className="w-20 h-20 text-rose-500 mb-4 animate-pop" /><h3 className="text-3xl font-black mb-6">مدفع الكلمات</h3><button onClick={startGame} className="bg-rose-600 text-white px-8 py-3 rounded-full font-bold text-xl hover:bg-rose-500 z-30 relative">ابدأ التصويب</button></div>}{gameState === 'won' && <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md z-20 font-changa text-white"><Trophy className="w-24 h-24 text-yellow-400 mb-4 animate-pop" /><h3 className="text-4xl font-black mb-6">رماية دقيقة!</h3><button onClick={startGame} className="bg-rose-600 text-white px-8 py-3 rounded-full font-bold text-xl z-30 relative">العب مجدداً</button></div>}{targets.map(t => <div key={t.id} className={`absolute font-naskh font-black text-3xl md:text-4xl px-5 py-2 rounded-full shadow-lg border-2 ${t.isTarget ? 'bg-slate-800 text-rose-200 border-rose-500' : 'bg-slate-800 text-white border-slate-600'}`} style={{ left: `${t.x}%`, top: `${t.y}%`, transform: 'translate(-50%, -50%)', whiteSpace: 'nowrap' }}>{t.text}</div>)}{lasers.map(l => <div key={l.id} className="absolute w-2 h-6 bg-cyan-400 rounded-full" style={{ left: `${l.x}%`, top: `${l.y}%`, transform: 'translate(-50%, -50%)' }}></div>)}<div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-16 h-12 bg-slate-700 rounded-t-full border-t-4 border-rose-500 flex items-end justify-center"><div className="w-4 h-8 bg-rose-500 rounded-t-sm mb-2"></div></div></div></div>
+    );
+};
+
+const JumpingHeroGame = ({ config, onWin, onBack }) => {
+    const [gameState, setGameState] = useState('idle'); const [score, setScore] = useState(0); const [targetWord, setTargetWord] = useState(''); const [heroY, setHeroY] = useState(80); const [obstacles, setObstacles] = useState([]);
+    const wordsList = WORD_BANK[config.skill][config.difficulty === 'sentences' ? 'hard' : config.difficulty];
+    const reqRef = useRef(); const heroState = useRef({ y: 80, vy: 0, isJumping: false }); const obstaclesRef = useRef([]); const scoreRef = useRef(0); const lastSpawn = useRef(0);
+    const targetRef = useRef(''); const wordsRef = useRef(wordsList);
+    useEffect(() => { wordsRef.current = wordsList; }, [wordsList]);
+    const startGame = () => { setGameState('playing'); setScore(0); scoreRef.current = 0; setObstacles([]); obstaclesRef.current = []; heroState.current = { y: 80, vy: 0, isJumping: false }; const t = wordsList[Math.floor(Math.random() * wordsList.length)]; setTargetWord(t); targetRef.current = t; };
+    const handleJump = () => { if (gameState === 'playing' && !heroState.current.isJumping) { playSoundEffect('jump'); heroState.current.vy = -3; heroState.current.isJumping = true; } };
+    const update = useCallback(() => {
+        if (gameState !== 'playing') return; const now = Date.now();
+        heroState.current.vy += 0.15; heroState.current.y += heroState.current.vy;
+        if (heroState.current.y > 80) { heroState.current.y = 80; heroState.current.vy = 0; heroState.current.isJumping = false; } setHeroY(heroState.current.y);
+        const spawnDelay = 2500 - (config.speed * 1500); 
+        if (now - lastSpawn.current > Math.max(800, spawnDelay)) {
+            const isTarget = Math.random() > 0.5; const type = isTarget ? 'high' : 'low'; let text = targetRef.current; if (!isTarget) { const dists = wordsRef.current.filter(w=>w!==targetRef.current); text = dists.length>0 ? dists[Math.floor(Math.random()*dists.length)] : wordsRef.current[0]; }
+            obstaclesRef.current.push({ id: Math.random(), text, isTarget, type, x: 110, y: type === 'high' ? 40 : 80, speed: -config.speed }); lastSpawn.current = now;
+        }
+        obstaclesRef.current = obstaclesRef.current.map(ob => {
+            ob.x += ob.speed * 2;
+            if (ob.x > 15 && ob.x < 25 && Math.abs(ob.y - heroState.current.y) < 15) {
+                if (ob.isTarget) { playSoundEffect('win'); scoreRef.current += 1; setScore(scoreRef.current); const nt = wordsRef.current[Math.floor(Math.random() * wordsRef.current.length)]; setTargetWord(nt); targetRef.current = nt; if (scoreRef.current >= config.targetScore) { setGameState('won'); onWin(config.targetScore); } }
+                else { playSoundEffect('fail'); scoreRef.current = Math.max(0, scoreRef.current - 1); setScore(scoreRef.current); } return null;
+            } return ob;
+        }).filter(ob => ob !== null && ob.x > -30);
+        setObstacles([...obstaclesRef.current]); reqRef.current = requestAnimationFrame(update);
+    }, [gameState, config.speed, config.targetScore, onWin]);
+    useEffect(() => { if (gameState === 'playing') reqRef.current = requestAnimationFrame(update); return () => cancelAnimationFrame(reqRef.current); }, [gameState, update]);
+    return (
+        <div className="h-full flex flex-col bg-sky-100 rounded-[2rem] border-4 border-teal-400 overflow-hidden relative shadow-lg" onPointerDown={handleJump} style={{touchAction: 'none'}}><div className="p-3 bg-white text-teal-800 flex justify-between z-10 font-changa shadow-sm"><button onClick={onBack} className="p-1 hover:bg-slate-100 rounded-xl"><ChevronRight size={24}/></button><div className="font-bold text-lg flex flex-col items-center"><span className="text-xs text-slate-400">اقفز والتقط:</span><span className="text-3xl md:text-4xl font-black font-naskh text-teal-700">{targetWord}</span></div><div className="font-bold text-white bg-teal-500 px-4 py-2 rounded-full">{score} / {config.targetScore}</div></div><div className="flex-1 relative overflow-hidden bg-gradient-to-b from-sky-200 to-sky-100"><div className="absolute bottom-0 w-full h-[20%] bg-emerald-500 border-t-8 border-emerald-600"></div>{gameState === 'idle' && <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm z-20 font-changa"><MoveUp className="w-20 h-20 text-teal-500 mb-4 animate-bounce" /><h3 className="text-3xl font-black mb-6">البطل القافز</h3><button onClick={startGame} className="bg-teal-500 text-white px-8 py-3 rounded-full font-bold text-xl hover:bg-teal-400 shadow-lg">ابدأ الركض</button></div>}{gameState === 'won' && <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md z-20 font-changa"><Trophy className="w-24 h-24 text-amber-500 mb-4 animate-pop" /><h3 className="text-4xl font-black mb-6">بطل رياضي!</h3><button onClick={startGame} className="bg-teal-500 text-white px-8 py-3 rounded-full font-bold text-xl shadow-lg">العب مجدداً</button></div>}{obstacles.map(ob => <div key={ob.id} className={`absolute font-naskh font-black text-3xl md:text-4xl px-5 py-2 rounded-2xl border-4 shadow-md ${ob.isTarget ? 'bg-yellow-100 text-yellow-800 border-yellow-400' : 'bg-rose-100 text-rose-800 border-rose-400'}`} style={{ left: `${ob.x}%`, top: `${ob.y}%`, transform: 'translate(-50%, -50%)', whiteSpace: 'nowrap' }}>{ob.text}</div>)}{gameState === 'playing' && <div className="absolute w-12 h-16 bg-blue-600 rounded-xl border-4 border-slate-800 flex items-center justify-center" style={{ left: '20%', top: `${heroY}%`, transform: 'translate(-50%, -100%)' }}><div className="w-8 h-8 bg-[#fcd34d] rounded-full absolute -top-6 border-2 border-slate-800"><div className="w-2 h-2 bg-slate-800 rounded-full absolute right-2 top-2"></div></div></div>}</div></div>
+    );
+};
+
+const SequenceMemoryGame = ({ config, onWin, onBack }) => {
+    const [gameState, setGameState] = useState('idle'); const [score, setScore] = useState(0); const [sequence, setSequence] = useState([]); const [playerStep, setPlayerStep] = useState(0); const [activePad, setActivePad] = useState(null); const [padWords, setPadWords] = useState([]);
+    const wordsList = WORD_BANK[config.skill][config.difficulty === 'sentences' ? 'hard' : config.difficulty]; const colors = ['bg-rose-500', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500'];
+    const initRound = () => { const selected = [...wordsList].sort(() => 0.5 - Math.random()).slice(0, 4); setPadWords(selected); const newSeq = [Math.floor(Math.random() * 4)]; setSequence(newSeq); setScore(0); playSequence(newSeq); };
+    const playSequence = async (seq) => {
+        setGameState('showing'); const delay = 800 - (config.speed * 800); 
+        for (let i = 0; i < seq.length; i++) { await new Promise(r => setTimeout(r, Math.max(300, delay))); setActivePad(seq[i]); playSoundEffect('click'); await new Promise(r => setTimeout(r, Math.max(200, delay - 200))); setActivePad(null); }
+        setGameState('playing'); setPlayerStep(0);
+    };
+    const handlePadClick = (idx) => {
+        if (gameState !== 'playing') return; setActivePad(idx); setTimeout(() => setActivePad(null), 200);
+        if (idx === sequence[playerStep]) {
+            playSoundEffect('click');
+            if (playerStep + 1 === sequence.length) { const newScore = score + 1; setScore(newScore); if (newScore >= config.targetScore) { playSoundEffect('win'); setGameState('won'); onWin(config.targetScore); } else { const newSeq = [...sequence, Math.floor(Math.random() * 4)]; setSequence(newSeq); setTimeout(() => playSequence(newSeq), 1000); } } else { setPlayerStep(s => s + 1); }
+        } else { playSoundEffect('fail'); setTimeout(() => playSequence(sequence), 800); }
+    };
+    return (
+        <div className="h-full flex flex-col bg-slate-900 rounded-[2rem] border-4 border-violet-500 overflow-hidden relative shadow-lg"><div className="p-3 bg-slate-950 text-white flex justify-between z-10 font-changa"><button onClick={onBack} className="p-1 hover:bg-slate-800 rounded-xl"><ChevronRight size={24}/></button><div className="font-bold text-violet-400 text-lg flex items-center gap-2"><Repeat size={24}/> تتابع الذاكرة</div><div className="font-bold text-yellow-400 bg-slate-800 px-4 py-2 rounded-full">{score} / {config.targetScore}</div></div><div className="flex-1 relative bg-slate-800 flex flex-col items-center justify-center p-4 md:p-6">{gameState === 'idle' && <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-20 font-changa text-white"><Layers className="w-20 h-20 text-violet-400 mb-4 animate-pulse" /><h3 className="text-3xl font-black mb-6">أضواء الذاكرة</h3><button onClick={() => { setGameState('playing'); initRound(); }} className="bg-violet-600 text-white px-8 py-3 rounded-full font-bold text-xl hover:bg-violet-500">ابدأ التركيز</button></div>}{gameState === 'won' && <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md z-20 font-changa text-white"><Trophy className="w-24 h-24 text-yellow-400 mb-4 animate-pop" /><h3 className="text-4xl font-black mb-6">ذاكرة عبقرية!</h3><button onClick={() => { setGameState('playing'); initRound(); }} className="bg-violet-600 text-white px-8 py-3 rounded-full font-bold text-xl">العب مجدداً</button></div>}<div className="grid grid-cols-2 gap-3 md:gap-4 w-full max-w-sm aspect-square">{padWords.map((w, i) => <button key={i} onPointerDown={() => handlePadClick(i)} className={`rounded-3xl border-4 font-naskh font-black text-4xl md:text-5xl transition-all duration-200 flex items-center justify-center text-center leading-tight p-2 ${activePad === i ? `${colors[i]} border-white text-white scale-95 shadow-[0_0_30px_rgba(255,255,255,0.8)]` : 'bg-slate-700 border-slate-600 text-slate-300 hover:bg-slate-600'}`}>{w}</button>)}</div>{gameState === 'showing' && <div className="mt-8 text-violet-400 font-changa font-bold text-xl animate-pulse">شاهد الترتيب جيداً...</div>}{gameState === 'playing' && <div className="mt-8 text-emerald-400 font-changa font-bold text-xl">دورك الآن! كرر الترتيب.</div>}</div></div>
+    );
+};
+
+const FlashlightGame = ({ config, onWin, onBack }) => {
+    const containerRef = useRef(null); const [mousePos, setMousePos] = useState({ x: -1000, y: -1000 }); const [hiddenWords, setHiddenWords] = useState([]); const [foundIds, setFoundIds] = useState([]); const [isWin, setIsWin] = useState(false);
+    const wordsList = WORD_BANK[config.skill][config.difficulty === 'sentences' ? 'hard' : config.difficulty];
+    const initGame = useCallback(() => { const selected = [...wordsList].sort(() => 0.5 - Math.random()).slice(0, config.targetScore); setHiddenWords(selected.map((w, i) => ({ id: i, text: w, top: Math.floor(Math.random() * 60) + 20, left: Math.floor(Math.random() * 70) + 15 }))); setFoundIds([]); setIsWin(false); }, [wordsList, config]);
+    useEffect(() => { initGame(); }, [initGame]);
+    const handleMove = (e) => { if (!containerRef.current || isWin) return; const rect = containerRef.current.getBoundingClientRect(); setMousePos({ x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left, y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top }); };
+    const handleWord = (id) => { if (foundIds.includes(id)) return; playSoundEffect('pop'); const newFound = [...foundIds, id]; setFoundIds(newFound); if (newFound.length === hiddenWords.length) { playSoundEffect('win'); setIsWin(true); setTimeout(() => { onWin(config.targetScore); initGame(); }, 2000); } };
+    const lightRadius = 150 - (config.speed * 80); 
+    return (
+        <div className="h-full flex flex-col items-center bg-slate-900 rounded-[2rem] border-4 border-yellow-500 overflow-hidden relative shadow-lg"><div className="w-full bg-slate-950 px-3 py-3 flex justify-between z-10 border-b border-slate-800"><button onClick={onBack} className="p-1 hover:bg-slate-800 rounded-xl"><ChevronRight size={24} className="text-slate-400"/></button><span className="font-changa font-bold text-yellow-400 text-xl">كشاف الكلمات</span><span className="font-changa font-bold text-white bg-slate-800 px-4 py-1 rounded-full">{foundIds.length} / {config.targetScore}</span></div><div ref={containerRef} className="flex-1 w-full relative overflow-hidden bg-slate-950 cursor-crosshair touch-none" onMouseMove={handleMove} onTouchMove={handleMove}><div className="absolute inset-0 bg-slate-800 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">{hiddenWords.map(w => <div key={w.id} onPointerDown={() => handleWord(w.id)} className={`absolute px-4 py-2 font-black text-4xl md:text-5xl rounded-xl transition-all cursor-pointer select-none font-naskh ${foundIds.includes(w.id) ? 'text-emerald-400 scale-125 drop-shadow-md' : 'text-slate-800 hover:text-yellow-400'}`} style={{ top: `${w.top}%`, left: `${w.left}%` }}>{w.text}</div>)}</div><div className="absolute inset-0 pointer-events-none transition-opacity duration-300" style={{ background: isWin ? 'transparent' : `radial-gradient(circle ${Math.max(80, lightRadius)}px at ${mousePos.x}px ${mousePos.y}px, transparent 0%, rgba(15, 23, 42, 0.98) 100%)` }}><div className="absolute inset-0 flex items-center justify-center"><p className="text-yellow-400/80 text-xl font-changa animate-pulse text-center px-8 bg-black/60 p-4 rounded-xl border border-yellow-900">حرك إصبعك للبحث في الظلام</p></div></div>{isWin && <div className="absolute inset-0 bg-black/80 z-50 flex flex-col items-center justify-center animate-in fade-in font-changa"><Lightbulb className="text-yellow-400 w-24 h-24 mb-6 animate-pop" /><h2 className="text-4xl font-black text-white">استكشاف رائع!</h2></div>}</div></div>
+    );
+};
+
+const SentenceBridgeGame = ({ config, onWin, onBack }) => {
+    const [gameState, setGameState] = useState('idle'); const [score, setScore] = useState(0); const [sentenceWords, setSentenceWords] = useState([]); const [currentWordIdx, setCurrentWordIdx] = useState(0); const [floatingOptions, setFloatingOptions] = useState([]);
+    const sentencesList = WORD_BANK[config.skill].sentences; const distractorsList = WORD_BANK[config.skill].hard; 
+    const containerRef = useRef(null); const reqRef = useRef(); const optionsRef = useRef([]); const lastSpawn = useRef(0);
+    const loadNewSentence = () => { const randomSentence = sentencesList[Math.floor(Math.random() * sentencesList.length)]; setSentenceWords(randomSentence.split(' ')); setCurrentWordIdx(0); optionsRef.current = []; setFloatingOptions([]); };
+    const startGame = () => { setGameState('playing'); setScore(0); loadNewSentence(); };
+    const update = useCallback(() => {
+        if (gameState !== 'playing') return; const now = Date.now(); const spawnDelay = 2000 - (config.speed * 1500); 
+        if (now - lastSpawn.current > Math.max(800, spawnDelay)) {
+            const isCorrect = Math.random() > 0.4; const targetWord = sentenceWords[currentWordIdx]; let text = targetWord;
+            if (!isCorrect && targetWord) { const dists = distractorsList.filter(w=>w!==targetWord); if(dists.length>0) text = dists[Math.floor(Math.random()*dists.length)]; }
+            if (targetWord) { optionsRef.current.push({ id: Math.random(), text, isCorrect, x: Math.random() * 80 + 10, y: 110, speed: -(config.speed + 0.1 + Math.random() * 0.1) }); lastSpawn.current = now; }
+        }
+        optionsRef.current = optionsRef.current.map(opt => { opt.y += opt.speed; return opt; }).filter(opt => opt.y > -20); 
+        setFloatingOptions([...optionsRef.current]); reqRef.current = requestAnimationFrame(update);
+    }, [gameState, currentWordIdx, sentenceWords, config.speed, distractorsList]);
+    useEffect(() => { if (gameState === 'playing') reqRef.current = requestAnimationFrame(update); return () => cancelAnimationFrame(reqRef.current); }, [gameState, update]);
+    const handleOptionClick = (text, isCorrect) => {
+        if (gameState !== 'playing') return;
+        if (isCorrect) {
+            playSoundEffect('jump'); optionsRef.current = []; setFloatingOptions([]); const nextIdx = currentWordIdx + 1; setCurrentWordIdx(nextIdx);
+            if (nextIdx >= sentenceWords.length) { playSoundEffect('win'); const newScore = score + 1; setScore(newScore); if (newScore >= config.targetScore) { setGameState('won'); onWin(config.targetScore); } else { setGameState('loading'); setTimeout(() => { loadNewSentence(); setGameState('playing'); }, 1500); } }
+        } else { playSoundEffect('fail'); if (containerRef.current) { containerRef.current.classList.add('animate-shake'); setTimeout(() => containerRef.current.classList.remove('animate-shake'), 400); } }
+    };
+    return (
+        <div ref={containerRef} className="h-full flex flex-col bg-emerald-900 rounded-[2rem] border-4 border-emerald-400 overflow-hidden relative shadow-lg"><div className="p-3 bg-emerald-950 text-white flex justify-between z-20 font-changa"><button onClick={onBack} className="p-1 hover:bg-emerald-800 rounded-xl"><ChevronRight size={24} className="text-emerald-400"/></button><div className="font-bold text-emerald-400 text-lg flex items-center gap-2"><Footprints size={20}/> خطوات الشجعان</div><div className="font-bold text-yellow-400 bg-emerald-800 px-4 py-1 rounded-full">{score} / {config.targetScore}</div></div><div className="flex-1 relative overflow-hidden bg-gradient-to-b from-emerald-900 to-slate-900">{gameState === 'idle' && <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm z-40 font-changa text-white"><Footprints className="w-20 h-20 text-emerald-400 mb-4 animate-bounce" /><h3 className="text-3xl font-black mb-6 text-emerald-400">جسر الجمل الطويلة</h3><button onClick={startGame} className="bg-emerald-500 text-slate-900 px-10 py-4 rounded-full font-black text-2xl hover:bg-emerald-400">ابدأ العبور</button></div>}{gameState === 'won' && <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md z-40 font-changa text-white"><Trophy className="w-24 h-24 text-yellow-400 mb-4 animate-pop" /><h3 className="text-4xl font-black mb-6 text-emerald-400">عبور آمن ومثالي!</h3><button onClick={startGame} className="bg-emerald-500 text-slate-900 px-8 py-3 rounded-full font-bold text-xl">العب مجدداً</button></div>}{(gameState === 'playing' || gameState === 'loading') && <div className="absolute inset-0 flex flex-col pt-6 z-10"><div className="w-full px-4 flex flex-wrap justify-center gap-2 md:gap-3 z-30 mb-8" dir="rtl">{sentenceWords.map((word, idx) => { let statusClass = ""; if (idx < currentWordIdx) { statusClass = "bg-emerald-800 text-emerald-300 opacity-60"; } else if (idx === currentWordIdx) { statusClass = "bg-white text-emerald-900 border-emerald-400 scale-110 z-10"; } else { statusClass = "bg-slate-800 text-slate-500 blur-[1px]"; } return <div key={idx} className={`px-4 py-3 rounded-2xl border-4 font-black text-3xl font-naskh transition-all ${statusClass}`}>{word}</div> })}</div><div className="w-full h-32 relative border-b-8 border-slate-800 flex items-end"><div className="absolute transition-all duration-700 ease-in-out z-20 flex flex-col items-center" style={{ right: `${(currentWordIdx / Math.max(1, sentenceWords.length - 1)) * 80 + 10}%`, bottom: '0px' }}><NinjaIcon className="w-16 h-16 text-emerald-400" /><div className="w-20 h-4 bg-slate-700 rounded-t-xl border-t-2 border-emerald-500/50 mt-1"></div></div></div>{gameState === 'playing' && floatingOptions.map(opt => <div key={opt.id} onPointerDown={() => handleOptionClick(opt.text, opt.isCorrect)} className="absolute cursor-pointer transition-transform hover:scale-105" style={{ left: `${opt.x}%`, top: `${opt.y}%`, transform: 'translateX(-50%)' }}><div className="relative px-6 py-4 bg-slate-700 border-b-8 border-slate-900 rounded-[2rem] flex items-center justify-center min-w-[120px]"><span className="font-naskh font-black text-4xl text-white">{opt.text}</span></div></div>)}</div>}</div></div>
+    );
+};
+
+
+// ==========================================
+// متجر المكافآت (Reward Store) + ورشة الليجو 🧱
+// ==========================================
+// 2. محرك رسم قطع الليجو (SVG Block Builder)
+const LegoBlock = ({ x, y, w, h, color, studs = 0 }) => {
+    const studWidth = w / studs;
+    return (
+        <g className="animate-drop-in origin-bottom">
+            <rect x={x+2} y={y+2} width={w} height={h} fill="rgba(0,0,0,0.15)" rx="2"/>
+            <rect x={x} y={y} width={w} height={h} fill={color} stroke="rgba(0,0,0,0.2)" strokeWidth="1.5" rx="2"/>
+            <rect x={x+1} y={y+1} width={w-2} height={4} fill="rgba(255,255,255,0.3)" rx="1"/>
+            {Array.from({length: studs}).map((_, i) => {
+                const sx = x + (studWidth * i) + (studWidth/2) - 4; const sy = y - 5;
+                return (
+                    <g key={i}>
+                        <rect x={sx} y={sy} width="8" height="6" fill={color} stroke="rgba(0,0,0,0.2)" strokeWidth="1" rx="1"/>
+                        <rect x={sx+1} y={sy+1} width="6" height="2" fill="rgba(255,255,255,0.4)" rx="0.5"/>
+                    </g>
+                );
+            })}
+        </g>
+    );
+};
+
+const LEGO_SHAPES = {
+    robot: { id: 'robot', name: "روبوت", parts: [{ step: 1, c: LegoBlock, props: { x: 70, y: 160, w: 20, h: 30, color: '#94a3b8', studs: 2 } }, { step: 1, c: LegoBlock, props: { x: 110, y: 160, w: 20, h: 30, color: '#94a3b8', studs: 2 } }, { step: 2, c: LegoBlock, props: { x: 60, y: 140, w: 80, h: 20, color: '#1e293b', studs: 6 } }, { step: 3, c: LegoBlock, props: { x: 50, y: 70, w: 100, h: 70, color: '#2563eb', studs: 8 } }, { step: 3, c: LegoBlock, props: { x: 70, y: 90, w: 60, h: 30, color: '#60a5fa', studs: 0 } }, { step: 4, c: LegoBlock, props: { x: 20, y: 70, w: 30, h: 60, color: '#dc2626', studs: 2 } }, { step: 5, c: LegoBlock, props: { x: 150, y: 70, w: 30, h: 60, color: '#dc2626', studs: 2 } }, { step: 6, c: LegoBlock, props: { x: 70, y: 20, w: 60, h: 50, color: '#facc15', studs: 4 } }, { step: 7, c: 'rect', props: { x: 80, y: 35, w: 12, h: 12, fill: '#1e293b', rx: 2 } }, { step: 7, c: 'rect', props: { x: 108, y: 35, w: 12, h: 12, fill: '#1e293b', rx: 2 } }, { step: 7, c: LegoBlock, props: { x: 95, y: -10, w: 10, h: 30, color: '#94a3b8', studs: 1 } } ] },
+    rocket: { id: 'rocket', name: "صاروخ", parts: [{ step: 1, c: 'polygon', props: { points: "85,160 100,195 115,160 100,170", fill: '#f97316' } }, { step: 1, c: 'polygon', props: { points: "90,160 100,185 110,160", fill: '#fef08a' } }, { step: 2, c: LegoBlock, props: { x: 40, y: 130, w: 30, h: 30, color: '#dc2626', studs: 2 } }, { step: 2, c: LegoBlock, props: { x: 130, y: 130, w: 30, h: 30, color: '#dc2626', studs: 2 } }, { step: 3, c: LegoBlock, props: { x: 70, y: 130, w: 60, h: 30, color: '#94a3b8', studs: 4 } }, { step: 4, c: LegoBlock, props: { x: 70, y: 70, w: 60, h: 60, color: '#f8fafc', studs: 4 } }, { step: 5, c: 'circle', props: { cx: 100, cy: 100, r: 15, fill: '#38bdf8', stroke: '#94a3b8', strokeWidth: 4 } }, { step: 6, c: LegoBlock, props: { x: 70, y: 40, w: 60, h: 30, color: '#f8fafc', studs: 4 } }, { step: 7, c: 'polygon', props: { points: "70,40 100,0 130,40", fill: '#dc2626', stroke: '#b91c1c', strokeWidth: 2 } } ] },
+    castle: { id: 'castle', name: "قلعة", parts: [{ step: 1, c: LegoBlock, props: { x: 20, y: 160, w: 160, h: 30, color: '#16a34a', studs: 12 } }, { step: 2, c: LegoBlock, props: { x: 70, y: 110, w: 60, h: 50, color: '#94a3b8', studs: 4 } }, { step: 2, c: 'path', props: { d: "M 85 160 L 85 130 A 15 15 0 0 1 115 130 L 115 160 Z", fill: '#78350f' } }, { step: 3, c: LegoBlock, props: { x: 30, y: 60, w: 40, h: 100, color: '#cbd5e1', studs: 3 } }, { step: 4, c: LegoBlock, props: { x: 130, y: 60, w: 40, h: 100, color: '#cbd5e1', studs: 3 } }, { step: 5, c: LegoBlock, props: { x: 70, y: 60, w: 60, h: 50, color: '#e2e8f0', studs: 4 } }, { step: 6, c: LegoBlock, props: { x: 25, y: 40, w: 50, h: 20, color: '#94a3b8', studs: 4 } }, { step: 6, c: LegoBlock, props: { x: 125, y: 40, w: 50, h: 20, color: '#94a3b8', studs: 4 } }, { step: 7, c: 'polygon', props: { points: "50,10 70,20 50,30", fill: '#facc15' } }, { step: 7, c: 'polygon', props: { points: "150,10 170,20 150,30", fill: '#facc15' } } ] },
+    car: { id: 'car', name: "سيارة", parts: [{ step: 1, c: 'circle', props: { cx: 50, cy: 160, r: 18, fill: '#1e293b', stroke: '#94a3b8', strokeWidth: 4 } }, { step: 1, c: 'circle', props: { cx: 150, cy: 160, r: 18, fill: '#1e293b', stroke: '#94a3b8', strokeWidth: 4 } }, { step: 2, c: LegoBlock, props: { x: 20, y: 130, w: 160, h: 20, color: '#475569', studs: 12 } }, { step: 3, c: LegoBlock, props: { x: 20, y: 100, w: 50, h: 30, color: '#facc15', studs: 3 } }, { step: 4, c: LegoBlock, props: { x: 130, y: 100, w: 50, h: 30, color: '#facc15', studs: 3 } }, { step: 5, c: LegoBlock, props: { x: 70, y: 90, w: 60, h: 40, color: '#38bdf8', studs: 4 } }, { step: 6, c: LegoBlock, props: { x: 80, y: 70, w: 40, h: 20, color: '#facc15', studs: 3 } }, { step: 7, c: LegoBlock, props: { x: 150, y: 70, w: 30, h: 10, color: '#dc2626', studs: 2 } }, { step: 7, c: 'rect', props: { x: 160, y: 80, w: 10, h: 20, fill: '#dc2626' } } ] }
+};
+
+const LegoRewardSystem = ({ stars, setStars, stage, setStage, selectedShape, setSelectedShape }) => {
+    const handleUpgrade = () => {
+        if (stars >= 5 && stage < 7) { playSoundEffect('build'); setStars(s => s - 5); setStage(stage + 1); } 
+        else { playSoundEffect('fail'); }
+    };
+
+    if (!selectedShape) {
+        return (
+            <div className="flex-1 flex flex-col items-center justify-center font-changa text-center h-full">
+                <Hammer className="w-12 h-12 text-blue-500 mb-4" />
+                <h3 className="text-2xl font-black text-slate-800 mb-2">ورشة ليجو الأبطال</h3>
+                <p className="text-slate-500 mb-4">اختري شكلاً لتبدأي ببنائه!</p>
+                <div className="grid grid-cols-2 gap-4 w-full">
+                    {Object.values(LEGO_SHAPES).map(shape => (
+                        <button key={shape.id} onClick={() => { playSoundEffect('click'); setSelectedShape(shape.id); }} className="bg-slate-50 border-2 border-slate-200 p-4 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-colors font-bold text-slate-700 flex flex-col items-center">
+                            <span className="text-3xl mb-2">{shape.id === 'robot'?'🤖':shape.id === 'rocket'?'🚀':shape.id === 'castle'?'🏰':'🏎️'}</span>
+                            {shape.name}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    const shapeDef = LEGO_SHAPES[selectedShape];
+    const partsToRender = shapeDef.parts.filter(p => p.step <= stage);
+    const isComplete = stage === 7;
+
+    return (
+        <div className="h-full flex flex-col items-center relative font-changa">
+            <div className="flex justify-between w-full mb-2">
+                <span className="font-bold text-blue-600">{shapeDef.name}</span>
+                <button onClick={()=>{setSelectedShape(null); setStage(0);}} className="text-xs text-rose-500 hover:underline">تغيير الشكل</button>
+            </div>
+            
+            <div className="relative w-full h-48 bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border-4 border-slate-200 bg-lego-pattern">
+                {/* Blueprint */}
+                <svg viewBox="0 0 200 200" className="w-[200px] h-[200px] absolute opacity-10 grayscale">
+                    {shapeDef.parts.map((p, idx) => { if (p.c === LegoBlock) return <LegoBlock key={`b-${idx}`} {...p.props} color="#94a3b8" />; const Tag = p.c; return <Tag key={`b-${idx}`} {...p.props} fill="#94a3b8" stroke="none" />; })}
+                </svg>
+                {/* Real blocks */}
+                <svg viewBox="0 0 200 200" className="w-[200px] h-[200px] absolute z-10 drop-shadow-xl">
+                    {partsToRender.map((p, idx) => { if (p.c === LegoBlock) return <LegoBlock key={idx} {...p.props} />; const Tag = p.c; return <Tag key={idx} {...p.props} className={`${p.props.className || ''} animate-drop-in origin-center`} />; })}
+                </svg>
+                {stage === 0 && <span className="absolute bottom-4 text-slate-400 font-bold text-xs">ورشة فارغة.. اشتري القطع!</span>}
+            </div>
+
+            <button onClick={handleUpgrade} disabled={isComplete || stars < 5} className={`mt-auto w-full py-3 rounded-xl font-black text-lg transition-all ${isComplete ? 'bg-slate-100 text-slate-400' : stars >= 5 ? `bg-blue-500 text-white shadow-md hover:bg-blue-600` : 'bg-slate-100 text-slate-400 opacity-70'}`}>
+                {isComplete ? 'اكتمل البناء! 🎉' : 'قطعة ليجو (5 نجوم ⭐)'}
+            </button>
+        </div>
+    );
+};
+
+const RewardStore = ({ stars, setStars, type, stages, setStages, legoShape, setLegoShape }) => {
+    const stage = stages[type] || 0;
+    const handleUpgrade = () => { if (stars >= 5 && stage < 5) { playSoundEffect('win'); setStars(s => s - 5); setStages(prev => ({ ...prev, [type]: stage + 1 })); } else { playSoundEffect('fail'); } };
+
+    if (type === 'lego') {
+        return (
+            <div className="flex flex-col h-full bg-white rounded-[2rem] p-6 shadow-xl border-4 border-slate-100">
+                <LegoRewardSystem stars={stars} setStars={setStars} stage={stages.lego || 0} setStage={(s) => setStages(prev => ({...prev, lego: s}))} selectedShape={legoShape} setSelectedShape={setLegoShape} />
+            </div>
+        );
+    }
+
+    const themes = { garden: { title: "حديقتي السعيدة", color: "emerald", icon: Home, desc: "ازرع الأشجار وابنِ المنزل" }, mira: { title: "خزانة ميرا", color: "pink", icon: Smile, desc: "افتحي فساتين محتشمة وأنيقة" }, baby: { title: "حضانة ثابت", color: "sky", icon: Baby, desc: "اعتنِ بالرضيع الصغير" } };
+    const t = themes[type];
+
+    const renderVisual = () => {
+        if (type === 'garden') return (
+            <div className="relative w-full h-40 bg-sky-100 rounded-xl overflow-hidden flex items-end justify-center border-b-8 border-emerald-500">
+                {stage >= 1 && <div className="absolute bottom-0 w-24 h-20 bg-yellow-100 border-2 border-yellow-400 rounded-t-lg"></div>}
+                {stage >= 2 && <div className="absolute bottom-20 w-32 h-0 border-l-[16px] border-r-[16px] border-b-[30px] border-l-transparent border-r-transparent border-b-red-500"></div>}
+                {stage >= 3 && <div className="absolute bottom-0 left-4 w-6 h-20 bg-amber-800"><div className="absolute -top-10 -left-6 w-16 h-16 bg-emerald-500 rounded-full"></div></div>}
+                {stage >= 4 && <div className="absolute top-4 right-4 w-8 h-8 bg-yellow-400 rounded-full animate-pulse"></div>}
+                {stage >= 5 && <div className="absolute bottom-0 right-8 text-2xl animate-bounce">🦋</div>}
+                {stage === 0 && <span className="text-slate-400 font-bold mb-4 font-changa">أرض فارغة.. ابدأ البناء!</span>}
+            </div>
+        );
+        if (type === 'mira') return (
+            <div className="relative w-full h-40 bg-pink-50 rounded-xl overflow-hidden flex items-center justify-center border-2 border-pink-200">
+                <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 bg-[#ffedd5] rounded-full flex items-center justify-center"><div className="w-10 h-10 bg-[#78350f] rounded-full -mt-4"></div></div>
+                    <div className={`w-16 transition-all duration-500 rounded-t-lg ${stage===0 ? 'h-16 bg-slate-200' : stage===1 ? 'h-20 bg-pink-400' : stage===2 ? 'h-24 bg-purple-500' : stage>=3 ? 'h-24 bg-rose-500 border-x-4 border-yellow-300' : ''}`}></div>
+                </div>
+            </div>
+        );
+        if (type === 'baby') return (
+            <div className="relative w-full h-40 bg-blue-50 rounded-xl overflow-hidden flex items-center justify-center border-2 border-blue-200">
+                <div className="relative flex flex-col items-center">
+                    <div className={`w-14 h-14 bg-[#ffedd5] rounded-full flex items-center justify-center ${stage>=4 ? 'bg-sky-400':''}`}>
+                        {stage < 2 && <div className="w-4 h-2 border-b-2 border-rose-400 rounded-full mt-4"></div>}
+                        {stage >= 2 && <div className="w-6 h-6 bg-yellow-400 rounded-full mt-4 border-2 border-white"></div>}
+                    </div>
+                    <div className={`w-16 h-16 rounded-[40%] mt-1 ${stage >= 1 ? 'bg-emerald-400' : 'bg-white'}`}></div>
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <div className="flex flex-col h-full bg-white rounded-[2rem] p-6 shadow-xl border-4 border-slate-100 font-changa">
+            <div className={`flex items-center gap-2 text-${t.color}-600 mb-4`}><t.icon size={28} /> <h3 className="text-2xl font-black">{t.title}</h3></div>
+            <p className="text-slate-500 text-sm font-bold mb-4">{t.desc} (المرحلة {stage}/5)</p>
+            {renderVisual()}
+            <div className="mt-auto pt-6">
+                <button onClick={handleUpgrade} disabled={stage >= 5 || stars < 5} className={`w-full py-4 rounded-xl font-black text-lg flex items-center justify-center gap-2 transition-all ${stage >= 5 ? 'bg-slate-100 text-slate-400' : stars >= 5 ? `bg-${t.color}-500 text-white shadow-md hover:bg-${t.color}-600 hover:-translate-y-1` : 'bg-slate-100 text-slate-400 opacity-70'}`}>
+                    {stage >= 5 ? 'اكتمل التطوير! 🎉' : 'تطوير (5 نجوم ⭐)'}
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// ==========================================
+// لوحة إعدادات المعلم المتقدمة الشاملة ⚙️
+// ==========================================
+const MasterSettingsPanel = ({ config, setConfig, isVisible, setIsVisible }) => {
+    if (!isVisible) return null;
+    return (
+        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in font-changa">
+            <div className="bg-white w-full max-w-lg rounded-[2rem] p-6 md:p-8 shadow-2xl border-4 border-indigo-100 text-right">
+                <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+                    <button onClick={() => setIsVisible(false)} className="bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-500 p-2 rounded-xl transition-colors"><Check size={24}/></button>
+                    <h2 className="text-2xl font-black text-indigo-900 flex items-center gap-2"><UserCog className="text-indigo-500"/> إعدادات محرك الألعاب</h2>
+                </div>
+
+                <div className="space-y-6">
+                    <div>
+                        <label className="block font-bold text-slate-700 mb-2">المهارة المستهدفة:</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {[...(WORD_BANK.lesson ? [{id:'lesson', l: WORD_BANK.lesson.name}] : []), {id:'fatha', l:'الفتحة'}, {id:'kasra', l:'الكسرة'}, {id:'damma', l:'الضمة'}, {id:'sukun', l:'السكون'}, {id:'mad', l:'المدود'}, {id:'shadda', l:'الشدة'}].map(s => (
+                                <button key={s.id} onClick={() => setConfig({...config, skill: s.id})} className={`py-2 rounded-xl text-sm font-bold border-2 transition-all ${config.skill === s.id ? 'bg-indigo-500 border-indigo-500 text-white shadow-md' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}>{s.l}</button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block font-bold text-slate-700 mb-2">مستوى الصعوبة (الكلمات):</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {[{id:'syllables', l:'حروف ومقاطع'}, {id:'easy', l:'كلمات بسيطة'}, {id:'hard', l:'كلمات متقدمة'}, {id:'sentences', l:'جمل كاملة'}].map(d => (
+                                <button key={d.id} onClick={() => setConfig({...config, difficulty: d.id})} className={`py-2 rounded-xl text-sm font-bold border-2 transition-all ${config.difficulty === d.id ? 'bg-emerald-500 border-emerald-500 text-white shadow-md' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}>{d.l}</button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div className="flex justify-between items-center mb-2">
+                            <label className="font-bold text-slate-700">سرعة اللعبة والديناميكية:</label>
+                            <span className="text-xs font-bold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-md">{Math.round(config.speed * 100)}%</span>
+                        </div>
+                        <input type="range" min="0.05" max="0.5" step="0.05" value={config.speed} onChange={(e) => setConfig({...config, speed: parseFloat(e.target.value)})} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
+                        <div className="flex justify-between text-[10px] text-slate-400 font-bold mt-1"><span>بطيء وهادئ</span><span>سريع وصاروخي</span></div>
+                    </div>
+
+                    <div>
+                        <label className="block font-bold text-slate-700 mb-2">عدد النقاط/الكلمات للنجاح:</label>
+                        <div className="flex gap-2">
+                            {[3, 5, 10].map(n => (
+                                <button key={n} onClick={() => setConfig({...config, targetScore: n})} className={`flex-1 py-2 rounded-xl font-bold border-2 transition-all ${config.targetScore === n ? 'bg-amber-500 border-amber-500 text-white shadow-md' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}>{n}</button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-8 pt-4 border-t border-slate-100">
+                    <button onClick={() => setIsVisible(false)} className="w-full bg-indigo-600 text-white font-black py-4 rounded-xl shadow-lg hover:bg-indigo-700 transition-all">اعتماد الإعدادات والعودة للعب</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+// ==========================================
+// التطبيق الرئيسي والإدارة (Main Dashboard)
+// ==========================================
+const App = () => {
+    const [stars, setStars] = useState(10); 
+    const [activeGame, setActiveGame] = useState(QP.get('game') || null);
+    const [rewardType, setRewardType] = useState('lego'); // تبدأ بورشة الليجو
+    const [rewardStages, setRewardStages] = useState({ garden: 0, mira: 0, baby: 0, lego: 0 });
+    const [legoShape, setLegoShape] = useState(null);
+    const [showConfetti, setShowConfetti] = useState(false);
+    
+    // Global Settings Configuration
+    const [gameConfig, setGameConfig] = useState(DEFAULT_CONFIG);
+    const [showSettings, setShowSettings] = useState(false);
+
+    const handleWin = (points) => {
+        setStars(s => s + points);
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
+    };
+
+    return (
+        <div className="min-h-screen bg-slate-50 font-changa text-slate-800 flex flex-col items-center p-2 md:p-6 overflow-x-hidden" dir="rtl">
+            {showConfetti && <ConfettiComponent />}
+            <MasterSettingsPanel config={gameConfig} setConfig={setGameConfig} isVisible={showSettings} setIsVisible={setShowSettings} />
+
+            {/* Header */}
+            <header className="w-full max-w-6xl bg-white/90 backdrop-blur rounded-3xl p-4 shadow-sm border border-slate-200 flex flex-wrap justify-between items-center mb-6 z-20">
+                <div className="flex items-center gap-3">
+                    <button onClick={() => setShowSettings(true)} className="bg-indigo-600 p-2.5 rounded-xl text-white shadow-md hover:bg-indigo-700 transition-colors group relative">
+                        <Settings size={24} className="group-hover:animate-spin" />
+                        <span className="absolute -top-2 -right-2 w-4 h-4 bg-rose-500 rounded-full border-2 border-white"></span>
+                    </button>
+                    <div>
+                        <h1 className="text-xl md:text-2xl font-black text-indigo-900">محرك أكاديمية ضاد الشامل</h1>
+                        <p className="text-xs text-indigo-500 font-bold">مهارة حالية: <span className="bg-indigo-100 px-2 py-0.5 rounded-md">{(WORD_BANK[gameConfig.skill] || {}).name || gameConfig.skill}</span> | مستوى: <span className="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md">{gameConfig.difficulty}</span></p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-4 mt-2 md:mt-0">
+                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                        <button onClick={()=>setRewardType('garden')} className={`p-2 rounded-lg transition-all ${rewardType==='garden'?'bg-white text-emerald-600 shadow-sm':'text-slate-400'}`}><Home size={18}/></button>
+                        <button onClick={()=>setRewardType('mira')} className={`p-2 rounded-lg transition-all ${rewardType==='mira'?'bg-white text-pink-600 shadow-sm':'text-slate-400'}`}><Smile size={18}/></button>
+                        <button onClick={()=>setRewardType('baby')} className={`p-2 rounded-lg transition-all ${rewardType==='baby'?'bg-white text-sky-600 shadow-sm':'text-slate-400'}`}><Baby size={18}/></button>
+                        <button onClick={()=>setRewardType('lego')} className={`p-2 rounded-lg transition-all ${rewardType==='lego'?'bg-white text-blue-600 shadow-sm':'text-slate-400'}`}><Hammer size={18}/></button>
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-amber-100 px-5 py-2 rounded-full border border-amber-200">
+                        <Star className="text-amber-500 fill-amber-500" size={20} />
+                        <span className="font-black text-xl text-amber-700">{stars}</span>
+                    </div>
+                </div>
+            </header>
+
+            {/* Main Content Area */}
+            <main className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+                
+                {/* Games Area (8 cols) */}
+                <div className="lg:col-span-8 flex flex-col h-full min-h-[550px]">
+                    {!activeGame ? (
+                        <div className="bg-white/90 backdrop-blur rounded-[2.5rem] p-6 md:p-8 shadow-xl border border-slate-200 flex-1">
+                            <div className="flex justify-between items-center mb-8 border-b border-slate-100 pb-4">
+                                <div>
+                                    <h2 className="text-3xl font-black text-slate-800">اختر محرك اللعب 🎮</h2>
+                                    <p className="text-slate-500 font-bold mt-1 text-sm">11 ديناميكية لعب مختلفة (خالية من التكرار)</p>
+                                </div>
+                                <button onClick={() => setShowSettings(true)} className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-indigo-100"><SlidersHorizontal size={16}/> إعدادات</button>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-5 flex-1 items-center justify-center">
+                                {/* كل الألعاب الـ 11 من تاريخ المحادثة */}
+                                <div onClick={()=>setActiveGame('spaceship')} className="bg-indigo-50 p-4 rounded-3xl border-2 border-indigo-200 text-center cursor-pointer hover:scale-105 transition-transform shadow-sm"><Rocket className="w-8 h-8 text-indigo-500 mx-auto mb-2"/><h3 className="font-bold text-indigo-800">مكوك الفضاء</h3></div>
+                                <div onClick={()=>setActiveGame('cannon')} className="bg-rose-50 p-4 rounded-3xl border-2 border-rose-200 text-center cursor-pointer hover:scale-105 transition-transform shadow-sm"><Crosshair className="w-8 h-8 text-rose-500 mx-auto mb-2"/><h3 className="font-bold text-rose-800">مدفع الليزر</h3></div>
+                                <div onClick={()=>setActiveGame('jump')} className="bg-teal-50 p-4 rounded-3xl border-2 border-teal-200 text-center cursor-pointer hover:scale-105 transition-transform shadow-sm"><MoveUp className="w-8 h-8 text-teal-500 mx-auto mb-2"/><h3 className="font-bold text-teal-800">البطل القافز</h3></div>
+                                <div onClick={()=>setActiveGame('simon')} className="bg-violet-50 p-4 rounded-3xl border-2 border-violet-200 text-center cursor-pointer hover:scale-105 transition-transform shadow-sm"><Repeat className="w-8 h-8 text-violet-500 mx-auto mb-2"/><h3 className="font-bold text-violet-800">تتابع الألوان</h3></div>
+                                <div onClick={()=>setActiveGame('flashlight')} className="bg-slate-800 p-4 rounded-3xl border-2 border-slate-600 text-center cursor-pointer hover:scale-105 transition-transform shadow-sm"><Lightbulb className="w-8 h-8 text-yellow-400 mx-auto mb-2"/><h3 className="font-bold text-yellow-400">كشاف الظلام</h3></div>
+                                {(WORD_BANK[gameConfig.skill].sentences || []).length > 0 && (<div onClick={()=>setActiveGame('bridge')} className="bg-emerald-50 p-4 rounded-3xl border-2 border-emerald-200 text-center cursor-pointer hover:scale-105 transition-transform shadow-sm"><Footprints className="w-8 h-8 text-emerald-500 mx-auto mb-2"/><h3 className="font-bold text-emerald-800">خطوات الشجعان</h3></div>)}
+                                <div onClick={()=>setActiveGame('conveyor')} className="bg-slate-100 p-4 rounded-3xl border-2 border-slate-300 text-center cursor-pointer hover:scale-105 transition-transform shadow-sm"><ScanLine className="w-8 h-8 text-slate-600 mx-auto mb-2"/><h3 className="font-bold text-slate-800">حزام المصنع</h3></div>
+                                <div onClick={()=>setActiveGame('cardsort')} className="bg-purple-50 p-4 rounded-3xl border-2 border-purple-200 text-center cursor-pointer hover:scale-105 transition-transform shadow-sm"><Layers className="w-8 h-8 text-purple-500 mx-auto mb-2"/><h3 className="font-bold text-purple-800">الفرز السريع</h3></div>
+                                <div onClick={()=>setActiveGame('whack')} className="bg-amber-50 p-4 rounded-3xl border-2 border-amber-200 text-center cursor-pointer hover:scale-105 transition-transform shadow-sm"><MousePointerClick className="w-8 h-8 text-amber-500 mx-auto mb-2"/><h3 className="font-bold text-amber-800">صيد الكلمات</h3></div>
+                                <div onClick={()=>setActiveGame('claw')} className="bg-yellow-50 p-4 rounded-3xl border-2 border-yellow-300 text-center cursor-pointer hover:scale-105 transition-transform shadow-sm"><ArrowDownToLine className="w-8 h-8 text-yellow-600 mx-auto mb-2"/><h3 className="font-bold text-yellow-800">رافعة الأبطال</h3></div>
+                                <div onClick={()=>setActiveGame('doors')} className="bg-emerald-900 p-4 rounded-3xl border-2 border-emerald-700 text-center cursor-pointer hover:scale-105 transition-transform shadow-sm"><DoorOpen className="w-8 h-8 text-emerald-400 mx-auto mb-2"/><h3 className="font-bold text-emerald-400">بوابات العبور</h3></div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-4 md:p-6 shadow-xl border-4 border-indigo-100 flex-1 flex flex-col animate-in zoom-in-95 duration-300">
+                            <div className="flex justify-between items-center mb-6 bg-slate-50 p-2 rounded-2xl border border-slate-200">
+                                <button onClick={() => setActiveGame(null)} className="flex items-center gap-1 font-bold text-slate-500 hover:text-slate-800 px-3 py-1 bg-white rounded-xl shadow-sm"><ChevronRight size={18}/> المحرك</button>
+                                <div className="flex gap-2 text-xs font-bold">
+                                    <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md">مهارة: {(WORD_BANK[gameConfig.skill] || {}).name || gameConfig.skill}</span>
+                                    <span className="bg-rose-100 text-rose-700 px-2 py-1 rounded-md">مستوى: {gameConfig.difficulty}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex-1 w-full h-full">
+                                {activeGame === 'spaceship' && <SpaceshipSteeringGame config={gameConfig} onWin={handleWin} onBack={() => setActiveGame(null)} />}
+                                {activeGame === 'cannon' && <LaserCannonGame config={gameConfig} onWin={handleWin} onBack={() => setActiveGame(null)} />}
+                                {activeGame === 'jump' && <JumpingHeroGame config={gameConfig} onWin={handleWin} onBack={() => setActiveGame(null)} />}
+                                {activeGame === 'simon' && <SequenceMemoryGame config={gameConfig} onWin={handleWin} onBack={() => setActiveGame(null)} />}
+                                {activeGame === 'flashlight' && <FlashlightGame config={gameConfig} onWin={handleWin} onBack={() => setActiveGame(null)} />}
+                                {activeGame === 'bridge' && <SentenceBridgeGame config={gameConfig} onWin={handleWin} onBack={() => setActiveGame(null)} />}
+                                {activeGame === 'conveyor' && <ConveyorGame config={gameConfig} onWin={handleWin} onBack={() => setActiveGame(null)} />}
+                                {activeGame === 'cardsort' && <CardSortGame config={gameConfig} onWin={handleWin} onBack={() => setActiveGame(null)} />}
+                                {activeGame === 'whack' && <WhackAMoleGame config={gameConfig} onWin={handleWin} onBack={() => setActiveGame(null)} />}
+                                {activeGame === 'claw' && <ClawMachineGame config={gameConfig} onWin={handleWin} onBack={() => setActiveGame(null)} />}
+                                {activeGame === 'doors' && <MazeDoorsGame config={gameConfig} onWin={handleWin} onBack={() => setActiveGame(null)} />}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Reward Store Area (4 cols) */}
+                <div className="lg:col-span-4 h-full">
+                    <RewardStore stars={stars} setStars={setStars} type={rewardType} stages={rewardStages} setStages={setRewardStages} legoShape={legoShape} setLegoShape={setLegoShape} />
+                </div>
+
+            </main>
+        </div>
+    );
+};
+
+createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>
