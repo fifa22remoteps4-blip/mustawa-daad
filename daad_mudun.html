@@ -2504,7 +2504,8 @@ function GenStation({ C, id, hero }) {
     const withPic = C.words.filter(w => w.ic);
     return withPic.length >= 4 ? withPic.map(w => [w.w, { ic: w.ic }]) : C.letters.slice(0, 8).map(s => [s, s.replace(/[ً-ْ]/g, '') + ' + ' + (s.match(/[ً-ْ]+/) || [''])[0].replace(/./, m => '◌' + m)]);
   }, [C.id]);
-  const T = (list) => <Station key={C.id + id} tabs={list} />;
+  const mini = C.minis && C.minis[id];
+  const T = (list) => <Station key={C.id + id} tabs={mini ? [...list, ['mini', '📖 ختام الدرس: قصّة', () => <StoryRead S={mini} hero={hero} />]] : list} />;
   if (id === 'idea') return T([['content', 'محتوى: الفكرة', () => <IdeaContent C={C} />], ['ex', 'تمارين: صوتٌ ثم حركة', () => <HatsQuiz C={C} />], ['game', 'لعبة: حامل الحركة', () => <CarrierGame C={C} />]]);
   if (id === 'letters') return T([['content', 'محتوى: بالترتيب', () => <LettersContent C={C} />], ['ex', 'تمارين: اقرأ', () => <LettersEx C={C} />], ['game', 'لعبة: القنّاص المرقّم', () => <Sniper groups={C.sniper} />]]);
   if (id === 'blend') return T([['content', 'محتوى: سلّم الدمج', () => <BlendContent C={C} />], ['ex', 'تمارين: برج الدمج', () => <BlendTower words={C.words} hero={hero} />], ['game', 'لعبة: ذاكرة الإحداثيات', () => <CoordMemory pairs={pairs} hero={hero} />]]);
