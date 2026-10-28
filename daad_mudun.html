@@ -2367,7 +2367,7 @@ function StoryRead({ S, hero }) {
   const [k, setK] = useState(0), [res, setRes] = useState([]);
   const judge = v => { P.score(v); setRes([...res, [S.panels[k].t, v]]); setK(k + 1); };
   return (<div>
-    <div className="story-head"><h3>{S.title}</h3><span className="teacher-note" style={{ margin: 0 }}>{S.note}</span></div>
+    <div className="story-head"><span className="teacher-note" style={{ margin: 0 }}>للمعلّم — قصّة «{S.title}»: {S.note}. العنوان يقرؤه المعلّم؛ والطالب يقرأ اللوحات فقط.</span></div>
     <div className="panels">{S.panels.map((p, j) => (<div key={j} className={'panel4' + (j === k ? ' cur' : '') + (j > k ? ' hidden' : '')}>
       <span className="pnum">{NUMS[j]}</span><Pic k={p.ic} hero={hero} /><div className="ptext" onClick={() => say(p.t)}>{j <= k ? p.t : ''}</div></div>))}</div>
     {k < S.panels.length ? <TBar onOk={() => judge('ok')} onHelp={() => judge('help')} onNo={() => judge('no')} /> : <><Done msg="قرأتَ القصة كاملة ✓" /><Judged res={res} /></>}
