@@ -251,7 +251,7 @@
   HURUF.orders = { shape: HURUF.groups, abc: GROUPS_ABC };
   const hurufGroups = o => HURUF.orders[o] || HURUF.groups;
   const hurufStations = o => [
-    ...hurufGroups(o).map((g, i) => ({ id: (o === 'abc' ? 'a' : 'g') + (i + 1), label: g.name, pip: g.letters.join(' '), step: g.note, letters: g.letters })),
+    ...hurufGroups(o).map((g, i) => ({ id: (o === 'abc' ? 'a' : o === 'custom' ? 'c' : 'g') + (i + 1), label: g.name, pip: g.letters.join(' '), step: g.note, letters: g.letters })),
     { id: 'train', label: 'محطة القطار', pip: 'لا · القطار', step: '«لا» وترتيب الحروف' },
   ];
   const HURUF_STATIONS2 = hurufStations('shape');
