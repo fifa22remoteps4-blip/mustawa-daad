@@ -506,6 +506,45 @@ kbd{font:700 11px Tahoma,sans-serif;background:#fff;color:#2b1d2a;border:1px sol
 .pigeon{position:absolute;right:0;font-size:38px;animation:fly linear forwards}
 @keyframes fly{to{right:calc(100% - 40px)}}
 .pigeon-text{max-width:820px;margin:0 auto;font-family:var(--naskh);font-size:clamp(28px,4.5vw,40px);font-weight:700;line-height:1.9;background:#fffdf5;border:3px solid #000;padding:10px 16px}
+/* خريطة المدن المرقّمة */
+.wgroup{max-width:1180px;margin:0 auto 6px}
+.wg-h{margin:10px 0 6px;color:#fff;text-shadow:2px 2px 0 #000;font-size:22px;text-align:right;border-bottom:3px dashed rgba(255,255,255,.5);padding-bottom:2px}
+.wgroup .trail{justify-content:flex-start;direction:rtl}
+.city{position:relative}
+.wgroup .city{flex:0 0 250px;max-width:250px}
+.cnum{position:absolute;top:-12px;right:-12px;width:40px;height:40px;border-radius:50%;background:#ffd43b;border:3px solid #000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#1d1420}
+.cprog{font-size:13px;font-weight:800;color:#2b8a3e}
+/* جيش الحروف */
+.rn-scene{position:relative;max-width:820px;height:400px;margin:8px auto;border:4px solid #000;border-radius:16px;overflow:hidden;background:#8fd3ff;perspective:520px}
+.rn-sky{position:absolute;inset:0 0 62% 0;background:linear-gradient(#74c0fc,#d0ebff)}
+.rn-boss-far{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#b3343c;color:#fff;font-weight:800;padding:2px 14px;border:3px solid #000;border-radius:12px}
+.rn-road{position:absolute;left:-30%;right:-30%;bottom:-40%;height:140%;transform:rotateX(64deg);transform-origin:50% 100%;background:repeating-linear-gradient(0deg,#6b6f76 0 60px,#7a7f87 60px 120px);border-left:26px solid #69db7c;border-right:26px solid #69db7c}
+.rn-road::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:12px;margin-left:-6px;background:repeating-linear-gradient(0deg,#fff 0 50px,transparent 50px 110px)}
+.rn-road.move,.rn-road.move::after{animation:rnroad .45s linear infinite}
+@keyframes rnroad{to{background-position:0 120px}}
+.rn-road.move::after{animation-name:rnstripe}
+@keyframes rnstripe{to{background-position:0 110px}}
+.rn-gates{position:absolute;left:0;right:0;top:34%;display:flex;gap:14px;justify-content:center;direction:rtl;transform-origin:50% 0}
+.rn-gates.run{animation:rncome 1.3s ease-out both}
+@keyframes rncome{from{transform:scale(.18);opacity:.3}to{transform:scale(1);opacity:1}}
+.rn-gates.pass{animation:rnpass 1.4s ease-in both}
+@keyframes rnpass{60%{transform:scale(1);opacity:1}to{transform:scale(1.5) translateY(60px);opacity:0}}
+.rn-gate{position:relative;min-width:150px;height:130px;background:rgba(77,171,247,.85);border:5px solid #000;border-bottom:0;border-radius:18px 18px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#fff}
+.rn-gate .rn-opt{font-family:var(--naskh);font-size:clamp(30px,5vw,46px);font-weight:700;text-shadow:2px 2px 0 #000;line-height:1.5}
+.rn-gate.good{background:#2f9e44}.rn-gate.bad{background:#c92a2a}
+.rn-delta{position:absolute;top:-36px;font-size:34px;font-weight:800;color:#fff;text-shadow:2px 2px 0 #000}
+.rn-crowd{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap-reverse;justify-content:center;gap:0;max-width:300px;transition:opacity .6s}
+.rn-crowd img{width:38px;margin:-6px -3px 0}
+.rn-crowd b{position:absolute;top:-30px;left:50%;transform:translateX(-50%);background:#ffd43b;border:3px solid #000;border-radius:14px;padding:0 12px;font-size:20px}
+.rn-crowd.mine{bottom:8px}
+.rn-crowd.mine.run img{animation:rnbob .3s ease-in-out infinite alternate}
+.rn-crowd.mine.run img:nth-child(even){animation-delay:.15s}
+@keyframes rnbob{to{transform:translateY(-6px)}}
+.rn-crowd.enemy{top:26%}
+.rn-crowd.enemy img{filter:hue-rotate(150deg) saturate(1.6) brightness(.8);width:32px}
+.rn-crowd.enemy b{background:#b3343c;color:#fff}
+.rn-crowd.lost{opacity:.15}
+.rn-vs{position:absolute;top:52%;left:50%;transform:translate(-50%,-50%);font-size:44px;font-weight:800;color:#fff;text-shadow:3px 3px 0 #000;animation:shake .35s infinite}
 </style>
 </head>
 <body>
@@ -2361,6 +2400,48 @@ function MazeGame({ F }) {
   </div>);
 }
 
+/* جيش الحروف: ركضٌ بمنظور ثلاثي الأبعاد — البطل يتوقّف عند كلّ بوّابة، والجواب الصحيح يكبّر الجيش */
+function RunnerGame({ groups }) {
+  const P = usePlay();
+  const BOSS = 9;
+  const mk = () => shuffle(groups).slice(0, 6).map(g => { const opts = shuffle(g).slice(0, 3); return { opts, t: Math.floor(Math.random() * opts.length) }; });
+  const [R, setR] = useState(mk), [i, setI] = useState(0), [army, setArmy] = useState(1), [ph, setPh] = useState('run'), [pick, setPick] = useState(null), [delta, setDelta] = useState(0);
+  const r = R[i];
+  useEffect(() => {
+    if (ph === 'run') { const t = setTimeout(() => setPh(i < R.length ? 'choose' : 'fight'), 1300); return () => clearTimeout(t); }
+    if (ph === 'fight') { const t = setTimeout(() => { setPh('end'); beep(army >= BOSS ? 'win' : 'bad'); }, 2400); return () => clearTimeout(t); }
+  }, [ph, i]);
+  const choose = k => {
+    if (ph !== 'choose' || !r || !r.opts[k]) return;
+    const ok = k === r.t, d = ok ? 3 : -2;
+    P.score(ok ? 'ok' : 'no'); setPick(k); setDelta(d); setPh('pass');
+    setTimeout(() => { setArmy(a => Math.max(1, a + d)); setPick(null); setI(i + 1); setPh('run'); }, 1400);
+  };
+  useKeys({ num: choose });
+  const restart = () => { setR(mk()); setI(0); setArmy(1); setPh('run'); setPick(null); };
+  const win = army >= BOSS, moving = ph === 'run' || ph === 'pass';
+  const crowd = (n, cls) => <div className={'rn-crowd ' + cls}>{Array.from({ length: Math.min(n, 24) }, (_, k) => <img key={k} src={SVGX.hero()} alt="" />)}<b>{n}</b></div>;
+  return (<div style={{ textAlign: 'center' }}>
+    <PlayBar P={P} />
+    <p className="lead">جيش الحروف: اسمع، ثم قل رقم البوّابة الصحيحة ليكبر جيشك {P.who && <b>— دور {P.who}</b>} <span className="count">{Math.min(i + 1, R.length)} / {R.length}</span></p>
+    {ph === 'choose' && r && <TeacherSecret key={i} text={r.opts[r.t]} hint="انطق هذا فقط — البطل ينتظر، ولا وقت" />}
+    <div className="rn-scene">
+      <div className="rn-sky"><span className="rn-boss-far">جيش الخصم: {BOSS}</span></div>
+      <div className={'rn-road' + (moving ? ' move' : '')} />
+      {r && ph !== 'fight' && ph !== 'end' && <div className={'rn-gates ' + ph} key={i}>
+        {r.opts.map((o, k) => <button key={k} className={'rn-gate' + (pick === k ? (delta > 0 ? ' good' : ' bad') : '')} onClick={() => choose(k)}>
+          <Num n={k} /><span className="rn-opt">{o}</span>{pick === k && <span className="rn-delta">{delta > 0 ? '+٣' : '−٢'}</span>}</button>)}
+      </div>}
+      {(ph === 'fight' || ph === 'end') && crowd(BOSS, 'enemy' + (ph === 'end' && win ? ' lost' : ''))}
+      {crowd(army, 'mine' + (moving ? ' run' : '') + (ph === 'end' && !win ? ' lost' : ''))}
+      {ph === 'fight' && <div className="rn-vs">{army} ضدّ {BOSS}</div>}
+    </div>
+    {ph === 'end' && (win ? <Done msg={'انتصر جيشك! ' + army + ' ضدّ ' + BOSS + ' 🎉'} again={restart} />
+      : <div><div className="win-banner" style={{ background: '#ffe3e3' }}>جيشك {army} والخصم {BOSS} — نحتاج جيشًا أكبر. نحاول مرّة أخرى!</div><button className="mc-btn go" onClick={restart}>حاول مرّة أخرى</button></div>)}
+    <div className="teacher-note">البوّابة الصحيحة تضيف ثلاثة جنود، والخاطئة تُنقص اثنين. يكفي أربع إجابات صحيحة من ستّ للفوز.</div>
+  </div>);
+}
+
 /* ---------- ٥. القصة ---------- */
 function StoryRead({ S, hero }) {
   const P = usePlay();
@@ -2519,6 +2600,7 @@ function GenStation({ C, id, hero }) {
     if (C.act) list.push(['act', C.act.title, () => <ReadAct A={C.act} hero={hero} />]);
     if (C.extra) list.push(['extra', C.extra.title, () => <OrderGame X={C.extra} hero={hero} />]);
     if (C.sort) list.push(['sort', C.sort.title, () => <SortWords S={C.sort} />]);
+    list.push(['run', '⚔️ جيش الحروف', () => <RunnerGame groups={C.sniper} />]);
     list.push(['xo', 'إكس-أو المقاطع', () => <XOWords pool={C.letters.length >= 9 ? C.letters : C.words.map(w => w.w)} />]);
     return T(list);
   }
@@ -2641,6 +2723,7 @@ function TeacherPanel({ state, setState, onClose, openGame, cityId }) {
   </div></div>);
 }
 
+const WGROUPS = [['١ · البداية', ['huruf']], ['٢ · الحركات القصيرة', ['fatha', 'kasra', 'damma', 'saha']], ['٣ · السكون والمدود', ['sukun', 'qamari', 'mad']], ['٤ · الشدّة والتنوين وأواخر الكلمات', ['shadda', 'shamsi', 'tanween', 'taa']], ['٥ · القراءة الحرّة', ['library']]];
 function App() {
   const [state, setState] = useState(() => ({ hero: 'boy', city: 'huruf', ...loadState() }));
   const [screen, setScreen] = useState('title');
@@ -2701,18 +2784,19 @@ function App() {
         <h2>خريطة المدن</h2>
         <div className="sub">من لا يعرف الحروف يبدأ بمدينة الحروف، ومن يعرفها يدخل مدينة الفتحة مباشرة.</div>
         <div className="mc pl-offer">{state.placement ? <span>آخر تحديد مستوى: يعرف {state.placement.known} حرفًا و{state.placement.harakat} من الحركات.</span> : <span><b>قبل البدء:</b> رحلة استكشاف قصيرة نعرف بها ما يعرفه الطالب من الحروف والحركات، فنكمل ممّا لا يعرفه.</span>}<button className="mc-btn go" onClick={() => setPlacing(true)}>🧭 {state.placement ? 'أعِد اختبار تحديد المستوى' : 'اختبار تحديد المستوى'}</button></div>
-        <div className="trail">{D.CITIES.map(c => {
+        {WGROUPS.map(([gt, ids]) => <div key={gt} className="wgroup"><h3 className="wg-h">{gt}</h3><div className="trail">{ids.map(id => D.CITIES.find(c => c.id === id)).filter(Boolean).map(c => {
+          const pr = Object.keys((state.prog || {})[c.id] || {}).length;
           const done = state.done && state.done[c.id], open = c.ready;
           return (
             <button key={c.id} className={'mc city' + (open ? '' : ' locked')} style={{ background: open ? (c.id === 'huruf' ? '#ffe3cc' : '#d7efc6') : undefined }} onClick={() => { if (open) enterCity(c.id); else toast('هذه المدينة قيد البناء'); }}>
               <img className="px" src={PX.castleIcon(c.color, !open)} alt="" style={{ width: 120, height: 102 }} />
               <span className="mark" style={{ color: c.color }}>{c.id === 'huruf' ? 'أ ب' : c.mark.length > 2 ? '' : DOT + c.mark}</span>
-              <span className="name">{c.name}</span>
+              <span className="cnum">{D.CITIES.indexOf(c) + 1}</span><span className="name">{c.name}</span>{pr > 0 && !done && <span className="cprog">أُنجزت {pr} من محطّاتها</span>}
               {c.first && <span className="note">ابدأ هنا إن كان الطالب لا يعرف الحروف</span>}
               <span className="st">{done ? '✓ مكتملة' : open ? 'ادخل المدينة ←' : 'قريبًا'}</span>
             </button>
           );
-        })}</div>
+        })}</div></div>)}
         <OrderPicker state={state} setState={setState} />
         <div className="top-actions">
           <button className="mc-btn sm" onClick={() => setScreen('title')}>→ البداية</button>
